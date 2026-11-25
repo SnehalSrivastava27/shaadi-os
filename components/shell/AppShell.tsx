@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bike, Heart } from "lucide-react";
+import { Bike, Heart, LogOut } from "lucide-react";
+import { signOut } from "@/app/login/actions";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav";
 import { useShaadiStore } from "@/stores/useShaadiStore";
@@ -57,19 +58,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               )}
             >
               <Bike className="size-4" />
-              Meri duty
+              My duty
               {myOffers > 0 && <Badge variant="accent" className="ml-auto">{myOffers}</Badge>}
             </Link>
           )}
         </nav>
         <Link href="/?tour=1" className="mx-3 mb-2 rounded-lg border border-white/20 px-3 py-2 text-xs text-[#FFF1D6] hover:bg-white/10">
-          🎓 Tutorial dekho
+          🎓 Watch the tutorial
         </Link>
         <Link href="/welcome" className="mx-3 mb-3 rounded-lg border border-[#F4A300]/40 px-3 py-2 text-xs text-[#F4D58D] hover:bg-white/10">
-          ✨ Shaadi OS kya hai?
+          ✨ What is Shaadi OS?
         </Link>
-        <div className="border-t border-white/10 p-4 text-xs text-[#F4D58D]">
-          Logged in as <span className="font-semibold text-white">{me ? me.name : "Organizer"}</span>
+        <div className="flex items-center justify-between gap-2 border-t border-white/10 p-4 text-xs text-[#F4D58D]">
+          <span className="min-w-0 truncate">
+            Logged in as <span className="font-semibold text-white">{me ? me.name : "Organizer"}</span>
+          </span>
+          <form action={signOut}>
+            <button type="submit" title="Sign out" aria-label="Sign out" className="rounded-md p-1.5 text-[#F4D58D] hover:bg-white/10 hover:text-white">
+              <LogOut className="size-4" />
+            </button>
+          </form>
         </div>
       </aside>
 
@@ -81,13 +89,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           {me ? (
             <Link href={`/helper/${me.id}`} className="flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-              <Bike className="size-3.5" /> Meri duty {myOffers > 0 && `(${myOffers})`}
+              <Bike className="size-3.5" /> My duty {myOffers > 0 && `(${myOffers})`}
             </Link>
           ) : (
             <span className="text-xs text-[#F4D58D]">
               {config.brideName} ♥ {config.groomName}
             </span>
           )}
+          <form action={signOut} className="ml-2">
+            <button type="submit" aria-label="Sign out" className="rounded-md p-1.5 text-[#F4D58D] hover:bg-white/10">
+              <LogOut className="size-4" />
+            </button>
+          </form>
         </header>
         <main className="flex-1 pb-20 md:pb-0">{children}</main>
       </div>
