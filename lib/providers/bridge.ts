@@ -79,7 +79,7 @@ function createBridgeProvider(id: "uber" | "rapido", displayName: string): RideP
         kind: "booked",
         booking: {
           bookingId: `${id.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`,
-          driverName: b.driver_name ?? "Driver dhoondh rahe hain",
+          driverName: b.driver_name ?? "Looking for a driver",
           car: b.car ?? b.product ?? displayName,
           plate: b.plate ?? "-",
           etaMinutes: b.eta_minutes ?? 0,

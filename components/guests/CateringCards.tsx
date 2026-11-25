@@ -16,7 +16,7 @@ export function CateringCards() {
   return (
     <div className="grid gap-3">
       <p className="text-muted-foreground text-sm">
-        Sirf &quot;haan&quot; wale RSVP gine gaye hain. Total plates (saare functions): <span className="text-foreground font-semibold">{grand}</span>
+        Only &quot;yes&quot; RSVPs are counted. Total plates (all functions): <span className="text-foreground font-semibold">{grand}</span>
       </p>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {lines.map((l) => {
@@ -52,10 +52,10 @@ export function CateringCards() {
                     </div>
                   </div>
                 ))}
-                {l.pending > 0 && <p className="text-muted-foreground text-xs">{l.pending} parivaar ka jawab abhi baaki hai</p>}
+                {l.pending > 0 && <p className="text-muted-foreground text-xs">{l.pending} {l.pending === 1 ? "family hasn't" : "families haven't"} replied yet</p>}
               </CardContent>
               <CardFooter>
-                <Button variant="outline" size="sm" onClick={() => copyText(cateringText(l, config), "Caterer ke liye copy ho gaya")}>
+                <Button variant="outline" size="sm" onClick={() => copyText(cateringText(l, config), "Copied for the caterer")}>
                   <Copy /> Copy for caterer
                 </Button>
               </CardFooter>

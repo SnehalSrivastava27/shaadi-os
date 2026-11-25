@@ -29,7 +29,7 @@ export function StoreHydrator({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-[60vh] flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
         <Loader2 className="size-6 animate-spin text-primary" />
-        <p className="font-heading text-lg text-primary">Shaadi OS khul raha hai…</p>
+        <p className="font-heading text-lg text-primary">Opening Shaadi OS…</p>
       </div>
     );
   }

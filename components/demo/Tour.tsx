@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 const SEEN_KEY = "so-tour-seen";
 
 const STEPS: { target?: string; title: string; text: string }[] = [
-  { title: "Swagat hai! 🙏", text: "Ek minute mein samjhiye Shaadi OS kaise kaam karta hai. Aage dabaate jaiye." },
-  { target: "summary", title: "Ek nazar mein", text: "Kitne helpers free hain, kitni gaadiyan free hain aur kitne pickups baaki hain." },
-  { target: "map", title: "Lucknow ka live naqsha", text: "Har helper, gaadi aur venue yahan dikhta hai. Grey matlab 5 minute se location nahi aayi. Kisi pe bhi click karke details dekhiye." },
-  { target: "tasks", title: "Naya kaam, ek tap mein", text: "\"New task\" dabaiye, pickup aur drop chuniye. \"Auto-assign\" sabse paas wale free helper aur sahi seats wali gaadi ko bhej deta hai." },
-  { target: "helpers", title: "Aapki team", text: "Chacha ji se cousin tak, sab helpers yahan. Koi free nahi? Uber ya Rapido ka rate dekh ke booking ho jaati hai." },
-  { target: "nav", title: "Baaki sab yahan", text: "Tasks ki poori list, Guests (RSVP aur plates ki ginti), Website (invite builder) aur Settings (WhatsApp connect)." },
-  { target: "demo", title: "Ab khud dekhiye", text: "Demo dabaiye: Bua ji ka pickup shuru se aakhir tak apne aap chalega." },
+  { title: "Welcome! 🙏", text: "Learn how Shaadi OS works in one minute. Just keep pressing Next." },
+  { target: "summary", title: "At a glance", text: "How many helpers are free, how many cars are free and how many pickups are pending." },
+  { target: "map", title: "Live map of Lucknow", text: "Every helper, car and venue shows up here. Grey means no location update for 5 minutes. Click anything to see details." },
+  { target: "tasks", title: "A new task in one tap", text: "Press \"New task\" and pick the pickup and drop. \"Auto-assign\" sends it to the nearest free helper with a car that has the right seats." },
+  { target: "helpers", title: "Your team", text: "From Chacha ji to the cousins, all your helpers are here. Nobody free? Compare Uber and Rapido rates and book in a tap." },
+  { target: "nav", title: "Everything else", text: "The full task list, Guests (RSVPs and plate counts), Website (invite builder) and Settings (connect WhatsApp)." },
+  { target: "demo", title: "See it for yourself", text: "Press Demo: Bua ji's pickup runs on its own from start to finish." },
 ];
 
 type Rect = { top: number; left: number; width: number; height: number };
@@ -130,7 +130,7 @@ export function Tour() {
               </Button>
             )}
             <Button size="sm" onClick={last ? finish : () => setStep(step + 1)}>
-              {last ? "Demo chalao ▶" : "Aage"}
+              {last ? "Run the demo ▶" : "Next"}
             </Button>
           </div>
         </div>

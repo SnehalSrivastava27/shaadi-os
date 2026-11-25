@@ -13,7 +13,7 @@ export function GuestsView() {
   const arriving = guests.filter((g) => g.arrival).length;
   return (
     <>
-      <PageHeader title="Guests" subtitle={`${guests.length} parivaar · RSVP, khana aur arrivals`} />
+      <PageHeader title="Guests" subtitle={`${guests.length} families · RSVPs, meals and arrivals`} />
       <div className="px-3 pb-6 md:px-6">
         <Tabs defaultValue="guests">
           <TabsList>

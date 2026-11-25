@@ -16,10 +16,10 @@ type QuoteState = { state: "loading" } | { state: "done"; quote: RideQuote } | {
 const MODE_BADGE: Record<BridgeStatus["mode"], { label: string; variant: "outline" | "busy" | "free" }> = {
   off: { label: "Demo rates", variant: "outline" },
   mock: { label: "Bridge · mock", variant: "busy" },
-  phone: { label: "Live · aapka phone", variant: "free" },
+  phone: { label: "Live · your phone", variant: "free" },
 };
 
-/** "Koi free nahi hai" dialog: compare Uber / Rapido through the RideProvider interface and book. */
+/** "Nobody is free" dialog: compare Uber / Rapido through the RideProvider interface and book. */
 export function FallbackDialog() {
   const fallback = useShaadiStore((s) => s.fallback);
   const task = useShaadiStore((s) => s.tasks.find((t) => t.id === s.fallback?.taskId));
@@ -53,7 +53,7 @@ export function FallbackDialog() {
         const q = await p.quote(req);
         if (run.current === id) setQuotes((s) => ({ ...s, [p.id]: { state: "done", quote: q } }));
       } catch (e) {
-        if (run.current === id) setQuotes((s) => ({ ...s, [p.id]: { state: "error", error: e instanceof Error ? e.message : "Rate nahi mila" } }));
+        if (run.current === id) setQuotes((s) => ({ ...s, [p.id]: { state: "error", error: e instanceof Error ? e.message : "Couldn't get a rate" } }));
       }
     };
     // A real phone can only open one app at a time.
@@ -87,27 +87,27 @@ export function FallbackDialog() {
     const q = quotes[providerId];
     if (!provider || !request || !task) return;
     if (needsConfirm && !confirmed) {
-      toast.error("Pehle confirm kijiye ki asli cab book karni hai");
+      toast.error("First confirm that you want to book a real cab");
       return;
     }
     setBooking(providerId);
     try {
       const res = await provider.book(request, { confirm: needsConfirm && confirmed, product: q?.state === "done" ? q.quote.productName : undefined });
       if (res.kind === "dry-run") {
-        addTimeline(`${provider.displayName} dry run: phone confirm screen tak pahuncha (${res.product ?? "cab"}, ₹${res.fare ?? "?"})`, task.id);
-        toast.info(`${provider.displayName}: confirm screen tak pahunch gaye`, {
-          description: "Dry run: asli booking band hai. ride-bridge mein BRIDGE_ALLOW_BOOKING=1 karke real booking on karein.",
+        addTimeline(`${provider.displayName} dry run: phone reached the confirm screen (${res.product ?? "cab"}, ₹${res.fare ?? "?"})`, task.id);
+        toast.info(`${provider.displayName}: reached the confirm screen`, {
+          description: "Dry run: real booking is off. Set BRIDGE_ALLOW_BOOKING=1 in ride-bridge to turn on real bookings.",
         });
         return;
       }
       const r = bookExternal(task.id, provider.displayName as ExternalProviderName, res.booking);
       if (r.ok)
         toast.success(`${provider.displayName} booked: ${res.booking.driverName}`, {
-          description: res.booking.status === "searching" ? "Driver dhoondha ja raha hai" : `${res.booking.plate} · ETA ${res.booking.etaMinutes} min`,
+          description: res.booking.status === "searching" ? "Looking for a driver" : `${res.booking.plate} · ETA ${res.booking.etaMinutes} min`,
         });
       else toast.error(r.error);
     } catch (e) {
-      toast.error(`${provider.displayName} booking fail ho gayi`, { description: e instanceof Error ? e.message : undefined });
+      toast.error(`${provider.displayName} booking failed`, { description: e instanceof Error ? e.message : undefined });
     } finally {
       setBooking(null);
     }
@@ -117,7 +117,7 @@ export function FallbackDialog() {
     if (!task) return;
     openFallback(null);
     const r = dispatchTask(task.id);
-    if (r?.ok) toast.success(`${r.helper.name} ko offer bheja`);
+    if (r?.ok) toast.success(`Offer sent to ${r.helper.name}`);
   };
 
   return (
@@ -125,24 +125,24 @@ export function FallbackDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Koi free nahi hai 😟
+            Nobody is free 😟
             {status && <Badge variant={MODE_BADGE[mode].variant}>{MODE_BADGE[mode].label}</Badge>}
           </DialogTitle>
           <DialogDescription>
-            {fallback?.reason} <span className="text-foreground font-medium">Uber ya Rapido se book karein?</span>
+            {fallback?.reason} <span className="text-foreground font-medium">Book an Uber or Rapido?</span>
           </DialogDescription>
         </DialogHeader>
         {task && (
           <div className="bg-muted rounded-lg p-3 text-sm">
             <p className="font-medium">{task.title}</p>
             <p className="text-muted-foreground">
-              {task.waypoints[0]?.label} → {task.waypoints[task.waypoints.length - 1]?.label} · {task.peopleCount} log
+              {task.waypoints[0]?.label} → {task.waypoints[task.waypoints.length - 1]?.label} · {task.peopleCount} people
             </p>
           </div>
         )}
         {!status ? (
           <p className="text-muted-foreground flex items-center gap-2 text-sm">
-            <Loader2 className="size-4 animate-spin" /> Ride bridge check kar rahe hain…
+            <Loader2 className="size-4 animate-spin" /> Checking the ride bridge…
           </p>
         ) : (
           <div className="grid gap-2">
@@ -162,7 +162,7 @@ export function FallbackDialog() {
                       <p className="text-muted-foreground truncate text-xs">
                         {!q || q.state === "loading" ? (
                           <span className="flex items-center gap-1">
-                            <Loader2 className="size-3 animate-spin" /> {live ? `Phone pe ${p.displayName} khol ke rate padh rahe hain (1–2 min)…` : "Rate dekh rahe hain…"}
+                            <Loader2 className="size-3 animate-spin" /> {live ? `Opening ${p.displayName} on the phone to read the rate (1–2 min)…` : "Getting the rate…"}
                           </span>
                         ) : q.state === "error" ? (
                           <span className="text-destructive">{q.error}</span>
@@ -172,7 +172,7 @@ export function FallbackDialog() {
                       </p>
                       {q?.state === "done" && q.quote.options && q.quote.options.length > 1 && (
                         <p className="text-muted-foreground mt-0.5 truncate text-[11px]">
-                          Aur: {q.quote.options.filter((o) => o.product !== q.quote.productName).map((o) => `${o.product} ₹${o.fare}`).join(" · ")}
+                          More: {q.quote.options.filter((o) => o.product !== q.quote.productName).map((o) => `${o.product} ₹${o.fare}`).join(" · ")}
                         </p>
                       )}
                     </div>
@@ -180,7 +180,7 @@ export function FallbackDialog() {
                   <div className="flex shrink-0 gap-1.5">
                   {p.id === "uber" && request && (
                     <Button size="sm" variant="outline" asChild>
-                      <a href={uberLink(request.pickup, request.drop)} target="_blank" rel="noopener noreferrer" title="Uber app mein pickup aur drop bhar ke kholo">
+                      <a href={uberLink(request.pickup, request.drop)} target="_blank" rel="noopener noreferrer" title="Open the Uber app with pickup and drop filled in">
                         <ExternalLink /> Uber app
                       </a>
                     </Button>
@@ -200,38 +200,38 @@ export function FallbackDialog() {
             <input type="checkbox" className="mt-0.5 size-4 accent-[#7a1f2b]" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
             <span>
               <span className="flex items-center gap-1 font-medium">
-                <ShieldAlert className="size-4 text-amber-700" /> Haan, asli cab book karo
+                <ShieldAlert className="size-4 text-amber-700" /> Yes, book a real cab
               </span>
-              Phone se real ride request jaayegi aur paise lagenge.
+              A real ride request will go out from the phone, and it will cost money.
             </span>
           </label>
         )}
         <p className="text-muted-foreground flex items-start gap-1.5 text-xs">
           {mode === "off" ? (
-            <>Demo mode: rates aur booking mock hain. Asli Uber/Rapido ke liye <code>ride-bridge</code> chalaiye (README dekhein).</>
+            <>Demo mode: rates and bookings are mocked. For real Uber/Rapido, run <code>ride-bridge</code> (see the README).</>
           ) : mode === "mock" ? (
             <>
-              Ride bridge connected hai lekin BRIDGE_MOCK=1 hai, isliye sample rates aa rahe hain.
-              {!status?.allowBooking && " Dry run mode: booking confirm screen par ruk jaati hai."}
+              The ride bridge is connected but BRIDGE_MOCK=1 is set, so you are seeing sample rates.
+              {!status?.allowBooking && " Dry run mode: booking stops at the confirm screen."}
             </>
           ) : (
             <>
-              <Smartphone className="mt-0.5 size-3.5 shrink-0" /> Aapke phone par Uber/Rapido apps DroidRun se chal rahe hain.
-              {!status?.allowBooking && " Dry run: phone confirm screen par ruk jayega."}
+              <Smartphone className="mt-0.5 size-3.5 shrink-0" /> The Uber/Rapido apps on your phone are being driven by DroidRun.
+              {!status?.allowBooking && " Dry run: the phone will stop at the confirm screen."}
             </>
           )}
         </p>
         <DialogFooter>
           <Button variant="ghost" onClick={() => openFallback(null)}>
-            Baad mein
+            Later
           </Button>
           {status && (
             <Button variant="outline" onClick={() => request && loadQuotes(status, request)} disabled={Object.values(quotes).some((q) => q.state === "loading")}>
-              <RefreshCw /> Rates dobara
+              <RefreshCw /> Refresh rates
             </Button>
           )}
           <Button variant="outline" onClick={retry}>
-            Dobara auto-assign
+            Auto-assign again
           </Button>
         </DialogFooter>
       </DialogContent>

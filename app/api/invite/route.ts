@@ -15,7 +15,7 @@ const bodySchema = z.object({
 const llmOutputSchema = z.object({
   patch: configPatchSchema,
   summary: z.string().default("Updated invite"),
-  reply: z.string().default("Ho gaya!"),
+  reply: z.string().default("Done!"),
 });
 
 export async function POST(req: Request) {
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   try {
     body = bodySchema.parse(await req.json());
   } catch {
-    return NextResponse.json({ error: "Invalid request: config aur message dono chahiye." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request: both config and message are required." }, { status: 400 });
   }
   const { config, message } = body;
 

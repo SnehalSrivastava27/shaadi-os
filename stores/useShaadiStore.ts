@@ -190,7 +190,7 @@ export const useShaadiStore = create<ShaadiState>()(
           createdAt: Date.now(),
         };
         set((s) => ({ tasks: [...s.tasks, task] }));
-        get().addTimeline(`Naya task: ${task.title}`, id);
+        get().addTimeline(`New task: ${task.title}`, id);
         return id;
       },
 
@@ -222,7 +222,7 @@ export const useShaadiStore = create<ShaadiState>()(
             })),
             highlightHelperId: helper.id,
           }));
-          get().addTimeline(`${task.title}: ${helper.name} ko offer bheja${vehicle ? ` (${vehicle.name})` : ""}`, taskId);
+          get().addTimeline(`${task.title}: offer sent to ${helper.name}${vehicle ? ` (${vehicle.name})` : ""}`, taskId);
           const p = latestPosition(get().positions, helper.id);
           if (p) get().setFocus(p.lat, p.lng, 13);
         } else {
@@ -233,7 +233,7 @@ export const useShaadiStore = create<ShaadiState>()(
             })),
             fallback: opts.silentFallback ? st.fallback : { taskId, reason: result.message },
           }));
-          get().addTimeline(`${task.title}: koi free helper nahi mila`, taskId);
+          get().addTimeline(`${task.title}: no free helper found`, taskId);
         }
         return result;
       },
@@ -241,12 +241,12 @@ export const useShaadiStore = create<ShaadiState>()(
       acceptTask(taskId) {
         const s = get();
         const task = s.tasks.find((t) => t.id === taskId);
-        if (!task) return { ok: false, error: "Task nahi mila" };
-        if (!canTransition(task.status, "accepted")) return { ok: false, error: `Task "${task.status}" hai, accept nahi ho sakta` };
+        if (!task) return { ok: false, error: "Task not found" };
+        if (!canTransition(task.status, "accepted")) return { ok: false, error: `Task is "${task.status}", it can't be accepted` };
         const helper = s.helpers.find((h) => h.id === task.assignedHelperId);
-        if (!helper) return { ok: false, error: "Helper assigned nahi hai" };
+        if (!helper) return { ok: false, error: "No helper is assigned" };
         const start = latestPosition(s.positions, helper.id) ?? { lat: task.waypoints[0].lat, lng: task.waypoints[0].lng };
-        const route: Waypoint[] = [{ label: `${helper.name} ki location`, lat: start.lat, lng: start.lng }, ...task.waypoints];
+        const route: Waypoint[] = [{ label: `${helper.name}'s location`, lat: start.lat, lng: start.lng }, ...task.waypoints];
         const totalKm = route.slice(1).reduce((sum, w, i) => sum + haversineKm(route[i], w), 0);
         const stepsPerLeg = Math.max(6, Math.min(12, Math.round(totalKm / route.length / 0.6)));
 
@@ -267,7 +267,7 @@ export const useShaadiStore = create<ShaadiState>()(
             ...(task.assignedVehicleId ? [mkPosition("vehicle", task.assignedVehicleId, start.lat, start.lng, 0, taskId)] : []),
           ],
         }));
-        get().addTimeline(`${helper.name} ne accept kiya: ${task.title}`, taskId);
+        get().addTimeline(`${helper.name} accepted: ${task.title}`, taskId);
         return { ok: true };
       },
 
@@ -288,21 +288,21 @@ export const useShaadiStore = create<ShaadiState>()(
           })),
           highlightHelperId: null,
         }));
-        get().addTimeline(`${helper?.name ?? "Helper"} ne mana kar diya: ${task.title}. Dusra helper dhoondh rahe hain…`, taskId);
+        get().addTimeline(`${helper?.name ?? "Helper"} declined: ${task.title}. Looking for another helper…`, taskId);
         return get().dispatchTask(taskId, { excludeHelperIds: declined });
       },
 
       completeTask(taskId, actor) {
         const s = get();
         const task = s.tasks.find((t) => t.id === taskId);
-        if (!task) return { ok: false, error: "Task nahi mila" };
+        if (!task) return { ok: false, error: "Task not found" };
         let status: TaskStatus = task.status;
         const extra: Task["activity"] = [];
         if (status === "accepted") {
           status = "in_progress";
           extra.push(act(actor ?? "Organizer", "Started the trip"));
         }
-        if (!canTransition(status, "completed")) return { ok: false, error: `"${task.status}" task ko done mark nahi kar sakte` };
+        if (!canTransition(status, "completed")) return { ok: false, error: `A "${task.status}" task can't be marked done` };
         const helperName = s.helpers.find((h) => h.id === task.assignedHelperId)?.name;
         set((st) => ({
           tasks: mapTask(st.tasks, taskId, (t) => ({
@@ -314,14 +314,14 @@ export const useShaadiStore = create<ShaadiState>()(
           helpers: st.helpers.map((h) => (h.currentTaskId === taskId ? { ...h, status: "free", currentTaskId: undefined } : h)),
           vehicles: st.vehicles.map((v) => (v.id === task.assignedVehicleId && task.status !== "external" ? { ...v, status: "free" } : v)),
         }));
-        get().addTimeline(`Ho gaya: ${task.title}${helperName ? ` (${helperName})` : ""}`, taskId);
+        get().addTimeline(`Done: ${task.title}${helperName ? ` (${helperName})` : ""}`, taskId);
         return { ok: true };
       },
 
       cancelTask(taskId) {
         const task = get().tasks.find((t) => t.id === taskId);
-        if (!task) return { ok: false, error: "Task nahi mila" };
-        if (!canTransition(task.status, "canceled")) return { ok: false, error: `"${task.status}" task cancel nahi ho sakta` };
+        if (!task) return { ok: false, error: "Task not found" };
+        if (!canTransition(task.status, "canceled")) return { ok: false, error: `A "${task.status}" task can't be canceled` };
         set((st) => ({
           tasks: mapTask(st.tasks, taskId, (t) => ({ ...t, status: "canceled", sim: undefined, activity: [...t.activity, act("Organizer", "Canceled the task")] })),
           helpers: st.helpers.map((h) => (h.currentTaskId === taskId ? { ...h, status: "free", currentTaskId: undefined } : h)),
@@ -330,14 +330,14 @@ export const useShaadiStore = create<ShaadiState>()(
           ),
           highlightHelperId: st.highlightHelperId === task.assignedHelperId ? null : st.highlightHelperId,
         }));
-        get().addTimeline(`Cancel: ${task.title}`, taskId);
+        get().addTimeline(`Canceled: ${task.title}`, taskId);
         return { ok: true };
       },
 
       bookExternal(taskId, provider, booking) {
         const task = get().tasks.find((t) => t.id === taskId);
-        if (!task) return { ok: false, error: "Task nahi mila" };
-        if (!canTransition(task.status, "external")) return { ok: false, error: `"${task.status}" task ke liye cab book nahi ho sakti` };
+        if (!task) return { ok: false, error: "Task not found" };
+        if (!canTransition(task.status, "external")) return { ok: false, error: `Can't book a cab for a "${task.status}" task` };
         set((st) => ({
           tasks: mapTask(st.tasks, taskId, (t) => ({
             ...t,
@@ -354,7 +354,7 @@ export const useShaadiStore = create<ShaadiState>()(
           fallback: null,
           messagePreviewTaskId: taskId,
         }));
-        get().addTimeline(`${provider} book hui: ${task.title} (${booking.driverName}, ${booking.plate})`, taskId);
+        get().addTimeline(`${provider} booked: ${task.title} (${booking.driverName}, ${booking.plate})`, taskId);
         return { ok: true };
       },
 
@@ -388,7 +388,7 @@ export const useShaadiStore = create<ShaadiState>()(
             const isLast = sim.leg + 1 >= sim.route.length - 1;
             if (isLast) {
               activity.push(act(helperName, `Reached ${to.label}. Task completed`));
-              logs.push({ text: `${helperName} ${to.label} pahunch gaye. Task complete! ✅`, taskId: task.id });
+              logs.push({ text: `${helperName} reached ${to.label}. Task complete! ✅`, taskId: task.id });
               const done: Task = { ...task, status: "completed", sim: undefined, activity };
               completed.push(done);
               return done;
@@ -396,7 +396,7 @@ export const useShaadiStore = create<ShaadiState>()(
             const pickedUp = task.type === "pickup" && sim.leg === 0;
             activity.push(act(helperName, `Reached ${to.label}${pickedUp ? ", guest picked up" : ""}`));
             logs.push({
-              text: pickedUp ? `${helperName} ${to.label} pahunche, guest gaadi mein. Ab ${sim.route[sim.leg + 2]?.label ?? "aage"} ki taraf` : `${helperName} ${to.label} pahunche`,
+              text: pickedUp ? `${helperName} reached ${to.label}, guest is in the car. Now heading to ${sim.route[sim.leg + 2]?.label ?? "the next stop"}` : `${helperName} reached ${to.label}`,
               taskId: task.id,
             });
             sim.leg += 1;
@@ -455,7 +455,7 @@ export const useShaadiStore = create<ShaadiState>()(
       setHelperSharing(helperId, on) {
         set((s) => ({ helpers: s.helpers.map((h) => (h.id === helperId ? { ...h, locationSharing: on } : h)) }));
         const h = get().helpers.find((x) => x.id === helperId);
-        if (h) get().addTimeline(`${h.name} ne location sharing ${on ? "on" : "off"} ki`);
+        if (h) get().addTimeline(`${h.name} turned location sharing ${on ? "on" : "off"}`);
       },
       setHelperAvailability(helperId, availability) {
         set((s) => ({ helpers: s.helpers.map((h) => (h.id === helperId ? { ...h, availability } : h)) }));
@@ -469,7 +469,7 @@ export const useShaadiStore = create<ShaadiState>()(
       },
       setAllHelpersBusy() {
         set((s) => ({ helpers: s.helpers.map((h): Helper => ({ ...h, status: "busy" })) }));
-        get().addTimeline("Sab helpers busy ho gaye (demo)");
+        get().addTimeline("All helpers are now busy (demo)");
       },
 
       // ---------------- guests ----------------
@@ -483,7 +483,7 @@ export const useShaadiStore = create<ShaadiState>()(
           }),
         }));
         const g = get().guests.find((x) => x.id === guestId);
-        if (g) get().addTimeline(`RSVP aaya: ${g.name} (${rsvps.filter((r) => r.status === "yes").length} function mein aa rahe hain)`);
+        if (g) get().addTimeline(`RSVP in: ${g.name} (attending ${rsvps.filter((r) => r.status === "yes").length} functions)`);
       },
 
       // ---------------- invite builder ----------------
@@ -510,7 +510,7 @@ export const useShaadiStore = create<ShaadiState>()(
       publishConfig() {
         const config = { ...get().config, published: true };
         set({ config, publishedConfig: config });
-        get().addTimeline(`Invite website publish ho gayi 🎉 (${config.brideName} weds ${config.groomName})`);
+        get().addTimeline(`Invite website published 🎉 (${config.brideName} weds ${config.groomName})`);
       },
       addChat(msg) {
         set((s) => ({ chat: [...s.chat, { ...msg, id: uid("m"), timestamp: Date.now() }].slice(-60) }));

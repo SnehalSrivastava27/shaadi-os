@@ -28,7 +28,7 @@ export function ActiveTasks({ onNewTask }: { onNewTask: () => void }) {
         </Button>
       </CardHeader>
       <CardContent className="grid gap-2">
-        {active.length === 0 && <p className="text-muted-foreground text-sm">Sab kaam ho gaye! Chai pi lijiye ☕</p>}
+        {active.length === 0 && <p className="text-muted-foreground text-sm">All done! Time for a cup of chai ☕</p>}
         {active.map((t) => {
           const h = helpers.find((x) => x.id === t.assignedHelperId);
           const v = vehicles.find((x) => x.id === t.assignedVehicleId);
@@ -41,7 +41,7 @@ export function ActiveTasks({ onNewTask }: { onNewTask: () => void }) {
                 <TaskStatusBadge status={t.status} />
               </div>
               <p className="text-muted-foreground mt-1 text-xs">
-                {formatDateTime(t.time)} · {t.peopleCount} log
+                {formatDateTime(t.time)} · {t.peopleCount} people
                 {h && ` · ${h.name}`}
                 {v && ` · ${v.name}`}
                 {t.externalBooking && ` · ${t.externalProvider}: ${t.externalBooking.driverName} (${t.externalBooking.plate})`}
@@ -61,7 +61,7 @@ export function ActiveTasks({ onNewTask }: { onNewTask: () => void }) {
                     variant="accent"
                     onClick={() => {
                       const r = dispatchTask(t.id);
-                      if (r?.ok) toast.success(`${r.helper.name} ko offer bheja`, { description: r.vehicle ? `${r.vehicle.name} · ${r.vehicle.plateNumber}` : undefined });
+                      if (r?.ok) toast.success(`Offer sent to ${r.helper.name}`, { description: r.vehicle ? `${r.vehicle.name} · ${r.vehicle.plateNumber}` : undefined });
                     }}
                   >
                     <Wand2 /> Auto-assign
@@ -70,7 +70,7 @@ export function ActiveTasks({ onNewTask }: { onNewTask: () => void }) {
                 {t.status === "offered" && h && (
                   <Button size="sm" variant="outline" asChild>
                     <Link href={`/helper/${h.id}`}>
-                      <UserRound /> {h.name} ka view
+                      <UserRound /> {h.name}’s view
                     </Link>
                   </Button>
                 )}

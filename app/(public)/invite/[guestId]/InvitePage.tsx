@@ -16,16 +16,16 @@ export function InvitePage({ guestId }: { guestId: string }) {
   if (!guest) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-2 p-6 text-center">
-        <p className="font-heading text-primary text-2xl">Ye invite link sahi nahi hai 🙏</p>
-        <p className="text-muted-foreground text-sm">Kripya parivaar se naya link maang lijiye.</p>
+        <p className="font-heading text-primary text-2xl">This invite link isn&apos;t valid 🙏</p>
+        <p className="text-muted-foreground text-sm">Please ask the family for a new link.</p>
       </div>
     );
   }
   if (!config.published) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-2 p-6 text-center">
-        <p className="font-heading text-primary text-2xl">Invite jald aa raha hai ✨</p>
-        <p className="text-muted-foreground text-sm">Website abhi publish nahi hui hai.</p>
+        <p className="font-heading text-primary text-2xl">Invite coming soon ✨</p>
+        <p className="text-muted-foreground text-sm">The website hasn&apos;t been published yet.</p>
       </div>
     );
   }

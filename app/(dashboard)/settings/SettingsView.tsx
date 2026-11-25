@@ -30,7 +30,7 @@ export function SettingsView() {
 
   return (
     <>
-      <PageHeader title="Settings" subtitle="Location sharing, login aur demo data" />
+      <PageHeader title="Settings" subtitle="Location sharing, login and demo data" />
       <div className="grid gap-4 px-3 pb-8 md:px-6 lg:grid-cols-2">
         <Card className="lg:row-span-2">
           <CardHeader>
@@ -38,7 +38,7 @@ export function SettingsView() {
               <ShieldCheck className="text-primary size-5" /> Location sharing
             </CardTitle>
             <CardDescription className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
-              Location sirf shaadi ke dinon mein, sirf aapki permission se.
+              Location is shared only during the wedding days, and only with your permission.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-1">
@@ -76,14 +76,14 @@ export function SettingsView() {
                     checked={h.locationSharing}
                     onCheckedChange={(on) => {
                       setSharing(h.id, on);
-                      toast(on ? `${h.name} ki location ab map par dikhegi` : `${h.name} ki location band: map aur auto-assign se hata diya`);
+                      toast(on ? `${h.name}'s location will now show on the map` : `${h.name}'s location is off: removed from the map and auto-assign`);
                     }}
                     aria-label={`Location sharing for ${h.name}`}
                   />
                 </div>
                 {!h.locationSharing && (
                   <p className="text-muted-foreground mt-1 ml-12 flex items-center gap-1 text-xs">
-                    <MapPinOff className="size-3" /> Map se chhupa hai, auto-assign skip karega
+                    <MapPinOff className="size-3" /> Hidden from the map; auto-assign will skip them
                   </p>
                 )}
               </div>
@@ -96,7 +96,7 @@ export function SettingsView() {
             <CardTitle className="flex items-center gap-2">
               <UserCog className="text-primary size-5" /> Login as
             </CardTitle>
-            <CardDescription>Demo ke liye organizer ya kisi helper ke roop mein app dekhiye.</CardDescription>
+            <CardDescription>For the demo, view the app as the organizer or as any helper.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3">
             <Select
@@ -104,11 +104,11 @@ export function SettingsView() {
               onValueChange={(v) => {
                 if (v === "organizer") {
                   setCurrentUser({ role: "organizer" });
-                  toast.success("Ab aap Organizer hain");
+                  toast.success("You are now the Organizer");
                 } else {
                   setCurrentUser({ role: "helper", helperId: v });
                   const h = helpers.find((x) => x.id === v);
-                  toast.success(`Ab aap ${h?.name} hain`, { description: "Unka task view khul raha hai" });
+                  toast.success(`You are now ${h?.name}`, { description: "Opening their task view" });
                   router.push(`/helper/${v}`);
                 }
               }}
@@ -117,7 +117,7 @@ export function SettingsView() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="organizer">👑 Organizer (Riya ke papa)</SelectItem>
+                <SelectItem value="organizer">👑 Organizer (Riya&apos;s father)</SelectItem>
                 {helpers.map((h) => (
                   <SelectItem key={h.id} value={h.id}>
                     {h.name} · {h.relation}
@@ -138,7 +138,7 @@ export function SettingsView() {
             <CardTitle className="flex items-center gap-2">
               <RotateCcw className="text-primary size-5" /> Reset demo data
             </CardTitle>
-            <CardDescription>Saare tasks, RSVPs, invite versions aur positions wapas seed data par.</CardDescription>
+            <CardDescription>Resets all tasks, RSVPs, invite versions and positions to the seed data.</CardDescription>
           </CardHeader>
           <CardContent>
             <Dialog>
@@ -149,22 +149,22 @@ export function SettingsView() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Pakka reset karein?</DialogTitle>
-                  <DialogDescription>Aapke saare badlaav mit jaayenge aur Riya-Arjun ka seed data wapas aa jayega.</DialogDescription>
+                  <DialogTitle>Reset everything?</DialogTitle>
+                  <DialogDescription>All your changes will be erased and the Riya & Arjun seed data will be restored.</DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button variant="ghost">Nahi</Button>
+                    <Button variant="ghost">Cancel</Button>
                   </DialogClose>
                   <DialogClose asChild>
                     <Button
                       variant="destructive"
                       onClick={() => {
                         resetDemo();
-                        toast.success("Demo data reset ho gaya");
+                        toast.success("Demo data reset");
                       }}
                     >
-                      Haan, reset karo
+                      Yes, reset
                     </Button>
                   </DialogClose>
                 </DialogFooter>

@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 type WaStatus = { state: "off" | "connecting" | "qr" | "open" | "closed"; qr?: string; me?: string; error?: string };
 
 const LABEL: Record<WaStatus["state"], string> = {
-  off: "Bridge band hai",
-  connecting: "Connect ho raha hai…",
-  qr: "QR scan kijiye",
+  off: "Bridge is off",
+  connecting: "Connecting…",
+  qr: "Scan the QR code",
   open: "Connected",
   closed: "Disconnected",
 };
@@ -49,22 +49,22 @@ export function WhatsAppCard() {
             </Badge>
           )}
         </CardTitle>
-        <CardDescription>Apne &quot;Message yourself&quot; chat se kaam bhejiye, jaise &quot;Bua ji ko charbagh se laana hai 3 baje, 3 log&quot;.</CardDescription>
+        <CardDescription>Send tasks from your &quot;Message yourself&quot; chat, like &quot;Pick up Bua ji from Charbagh at 3pm, 3 people&quot;.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3 text-sm">
         {state === "qr" && status?.qr && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- data URL from the local bridge */}
             <img src={status.qr} alt="WhatsApp link QR code" className="size-56 rounded-md border bg-white p-2" />
-            <p className="text-muted-foreground">WhatsApp → Settings → Linked devices → Link a device → yeh QR scan kijiye.</p>
+            <p className="text-muted-foreground">WhatsApp → Settings → Linked devices → Link a device → scan this QR code.</p>
           </>
         )}
         {state === "open" && (
           <p>
-            Connected number: <span className="font-medium">+{status?.me?.split("@")[0]}</span>. Yeh tab khula rakhiye, har ~5 sec mein naye messages dekhta hai.
+            Connected number: <span className="font-medium">+{status?.me?.split("@")[0]}</span>. Keep this tab open; it checks for new messages every ~5 seconds.
           </p>
         )}
-        {(state === "connecting" || state === "closed") && <p className="text-muted-foreground">Bridge chal raha hai, WhatsApp se jud raha hai…</p>}
+        {(state === "connecting" || state === "closed") && <p className="text-muted-foreground">Bridge is running, connecting to WhatsApp…</p>}
         {state === "off" && (
           <ol className="text-muted-foreground list-decimal space-y-1 pl-5">
             <li>
@@ -74,9 +74,9 @@ export function WhatsAppCard() {
               <code>WA_BRIDGE_TOKEN=$(openssl rand -hex 24) npm start</code>
             </li>
             <li>
-              <code>.env.local</code> mein <code>WA_BRIDGE_URL=http://127.0.0.1:8790</code> aur wahi <code>WA_BRIDGE_TOKEN</code>, phir dev server restart.
+              Add <code>WA_BRIDGE_URL=http://127.0.0.1:8790</code> and the same <code>WA_BRIDGE_TOKEN</code> to <code>.env.local</code>, then restart the dev server.
             </li>
-            <li>Secondary number use kijiye: Baileys unofficial hai, number ban ho sakta hai.</li>
+            <li>Use a secondary number: Baileys is unofficial and the number could get banned.</li>
           </ol>
         )}
       </CardContent>

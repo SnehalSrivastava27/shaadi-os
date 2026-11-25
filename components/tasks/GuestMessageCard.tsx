@@ -17,7 +17,7 @@ export function GuestMessageCard({ task }: { task: Task }) {
       <p className="text-[13px] leading-relaxed text-[#103b1c]">{text}</p>
       <div className="mt-2 flex items-center justify-between">
         <span className="text-[11px] text-green-800/70">{guest ? `To: ${guest.name} · ${guest.phone}` : "Guest preview"}</span>
-        <Button size="sm" variant="outline" onClick={() => copyText(text, "Message copy ho gaya")}>
+        <Button size="sm" variant="outline" onClick={() => copyText(text, "Message copied")}>
           <Copy /> Copy
         </Button>
       </div>

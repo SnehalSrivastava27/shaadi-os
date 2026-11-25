@@ -19,7 +19,7 @@ export function SummaryCards() {
 
   const items = [
     { label: "Free helpers", value: freeHelpers, total: helpers.length, icon: UserCheck, tone: "text-green-700 bg-green-100" },
-    { label: "Free gaadiyan", value: freeVehicles, total: vehicles.length, icon: Car, tone: "text-amber-800 bg-amber-100" },
+    { label: "Free vehicles", value: freeVehicles, total: vehicles.length, icon: Car, tone: "text-amber-800 bg-amber-100" },
     { label: "Pending pickups", value: pendingPickups, icon: MapPinned, tone: "text-primary bg-secondary" },
   ];
   return (

@@ -19,27 +19,27 @@ import { searchPlaces, type PlaceHit } from "@/lib/geo";
 
 export const newTaskSchema = z
   .object({
-    title: z.string().trim().min(3, "Task ka naam likhiye (kam se kam 3 akshar)"),
+    title: z.string().trim().min(3, "Give the task a name (at least 3 characters)"),
     type: z.enum(["pickup", "errand"]),
-    pickupPlaceId: z.string().min(1, "Pickup point chuniye"),
+    pickupPlaceId: z.string().min(1, "Choose a pickup point"),
     pickupLat: z.number().optional(),
     pickupLng: z.number().optional(),
     pickupLabel: z.string().optional(),
-    dropPlaceId: z.string().min(1, "Drop point chuniye"),
+    dropPlaceId: z.string().min(1, "Choose a drop point"),
     dropLat: z.number().optional(),
     dropLng: z.number().optional(),
     dropLabel: z.string().optional(),
-    time: z.string().min(1, "Time chuniye"),
-    peopleCount: z.number({ error: "Kitne log? Number daaliye" }).int().min(1, "Kam se kam 1").max(20, "20 se zyada nahi"),
+    time: z.string().min(1, "Choose a time"),
+    peopleCount: z.number({ error: "How many people? Enter a number" }).int().min(1, "At least 1").max(20, "No more than 20"),
     guestId: z.string(),
     autoAssign: z.boolean(),
   })
   .refine((v) => v.pickupPlaceId !== "custom" || (v.pickupLat !== undefined && v.pickupLng !== undefined), {
-    message: "Naksha par tap karke pickup point chuniye",
+    message: "Tap the map to choose a pickup point",
     path: ["pickupPlaceId"],
   })
   .refine((v) => v.dropPlaceId !== "custom" || (v.dropLat !== undefined && v.dropLng !== undefined), {
-    message: "Pata dhoondh kar drop point chuniye",
+    message: "Search for an address to choose a drop point",
     path: ["dropPlaceId"],
   });
 
@@ -51,7 +51,7 @@ export function isoToIstInput(iso: string): string {
   return d.toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" }).slice(0, 16).replace(" ", "T");
 }
 
-/** Nominatim search; runs on Enter / "Dhoondho" only (usage policy forbids autocomplete). */
+/** Nominatim search; runs on Enter / "Search" only (usage policy forbids autocomplete). */
 function AddressSearch({ onPick }: { onPick: (hit: PlaceHit) => void }) {
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<PlaceHit[] | null>(null);
@@ -62,7 +62,7 @@ function AddressSearch({ onPick }: { onPick: (hit: PlaceHit) => void }) {
     try {
       setHits(await searchPlaces(q.trim()));
     } catch {
-      toast.error("Pata nahi mila", { description: "Thodi der baad phir try kijiye" });
+      toast.error("Address not found", { description: "Please try again in a little while" });
     } finally {
       setBusy(false);
     }
@@ -71,7 +71,7 @@ function AddressSearch({ onPick }: { onPick: (hit: PlaceHit) => void }) {
     <div className="grid gap-1.5">
       <div className="flex gap-2">
         <Input
-          placeholder="Pata likhiye, jaise Hazratganj"
+          placeholder="Type an address, e.g. Hazratganj"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => {
@@ -82,10 +82,10 @@ function AddressSearch({ onPick }: { onPick: (hit: PlaceHit) => void }) {
           }}
         />
         <Button type="button" variant="outline" onClick={run} disabled={busy}>
-          {busy ? <Loader2 className="animate-spin" /> : <Search />} Dhoondho
+          {busy ? <Loader2 className="animate-spin" /> : <Search />} Search
         </Button>
       </div>
-      {hits?.length === 0 && <p className="text-muted-foreground text-xs">Lucknow mein kuch nahi mila</p>}
+      {hits?.length === 0 && <p className="text-muted-foreground text-xs">Nothing found in Lucknow</p>}
       {hits?.map((h, i) => (
         <button
           key={i}
@@ -166,12 +166,12 @@ export function NewTaskDialog({
       peopleCount: v.peopleCount,
       guestId: v.guestId === "none" ? undefined : v.guestId,
     });
-    toast.success("Task ban gaya", { description: v.title });
+    toast.success("Task created", { description: v.title });
     onOpenChange(false);
     if (v.autoAssign) {
       const r = dispatchTask(id);
-      if (r?.ok) toast.success(`${r.helper.name} ko offer bheja`, { description: r.vehicle ? `${r.vehicle.name} · ${r.vehicle.plateNumber}` : undefined });
-      else if (r) toast.warning("Koi free helper nahi mila", { description: r.message });
+      if (r?.ok) toast.success(`Offer sent to ${r.helper.name}`, { description: r.vehicle ? `${r.vehicle.name} · ${r.vehicle.plateNumber}` : undefined });
+      else if (r) toast.warning("No free helper found", { description: r.message });
     }
   };
 
@@ -179,8 +179,8 @@ export function NewTaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Naya task</DialogTitle>
-          <DialogDescription>Pickup ya errand banaiye. Auto-assign sabse paas wale free helper ko bhejega.</DialogDescription>
+          <DialogTitle>New task</DialogTitle>
+          <DialogDescription>Create a pickup or an errand. Auto-assign sends it to the nearest free helper.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
@@ -189,9 +189,9 @@ export function NewTaskDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kya karna hai?</FormLabel>
+                  <FormLabel>What needs doing?</FormLabel>
                   <FormControl>
-                    <Input placeholder="Bua ji ko Charbagh station se laana hai" {...field} />
+                    <Input placeholder="Pick up Bua ji from Charbagh station" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -211,8 +211,8 @@ export function NewTaskDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="pickup">Pickup (guest lana)</SelectItem>
-                        <SelectItem value="errand">Errand (saaman)</SelectItem>
+                        <SelectItem value="pickup">Pickup (bring a guest)</SelectItem>
+                        <SelectItem value="errand">Errand (things)</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>
@@ -223,7 +223,7 @@ export function NewTaskDialog({
                 name="peopleCount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{type === "pickup" ? "Kitne log" : "Kitne log / seats"}</FormLabel>
+                    <FormLabel>{type === "pickup" ? "How many people" : "People / seats"}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -247,7 +247,7 @@ export function NewTaskDialog({
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Jagah chuniye" />
+                        <SelectValue placeholder="Choose a place" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -256,7 +256,7 @@ export function NewTaskDialog({
                           {p.label}
                         </SelectItem>
                       ))}
-                      <SelectItem value="custom">📍 Pata dhoondhiye / naksha par tap kijiye…</SelectItem>
+                      <SelectItem value="custom">📍 Search an address / tap the map…</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -286,7 +286,7 @@ export function NewTaskDialog({
                 </div>
                 <p className="text-muted-foreground flex items-center gap-1 text-xs">
                   <MapPin className="size-3" />
-                  {pickupLat !== undefined ? `Chuna gaya: ${pickupLabel ?? `${pickupLat}, ${pickupLng}`}` : "Pata dhoondhiye ya pickup point par tap kijiye"}
+                  {pickupLat !== undefined ? `Selected: ${pickupLabel ?? `${pickupLat}, ${pickupLng}`}` : "Search an address or tap the pickup point"}
                 </p>
               </div>
             )}
@@ -309,7 +309,7 @@ export function NewTaskDialog({
                             {p.label}
                           </SelectItem>
                         ))}
-                        <SelectItem value="custom">🔎 Pata dhoondhiye…</SelectItem>
+                        <SelectItem value="custom">🔎 Search an address…</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -321,7 +321,7 @@ export function NewTaskDialog({
                 name="time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Kab (IST)</FormLabel>
+                    <FormLabel>When (IST)</FormLabel>
                     <FormControl>
                       <Input type="datetime-local" {...field} />
                     </FormControl>
@@ -360,7 +360,7 @@ export function NewTaskDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="none">Koi guest nahi</SelectItem>
+                      <SelectItem value="none">No guest</SelectItem>
                       {guests.map((g) => (
                         <SelectItem key={g.id} value={g.id}>
                           {g.name}
@@ -377,8 +377,8 @@ export function NewTaskDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                   <div>
-                    <FormLabel>Turant auto-assign karo</FormLabel>
-                    <FormDescription>Sabse paas wale free helper + sahi gaadi ko offer jayega</FormDescription>
+                    <FormLabel>Auto-assign right away</FormLabel>
+                    <FormDescription>The offer goes to the nearest free helper + the right car</FormDescription>
                   </div>
                   <FormControl>
                     <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -388,10 +388,10 @@ export function NewTaskDialog({
             />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-                Rehne do
+                Cancel
               </Button>
               <Button type="submit">
-                <Sparkles /> Task banao
+                <Sparkles /> Create task
               </Button>
             </DialogFooter>
           </form>

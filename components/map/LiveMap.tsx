@@ -62,7 +62,7 @@ export default function LiveMap({ onSelect, className }: { onSelect?: (s: MapSel
       <FlyToFocus />
 
       {/* Home */}
-      <Marker position={[HOME.lat, HOME.lng]} icon={makeIcon({ glyph: "home", color: "#7A1F2B", size: 34, square: true, label: "Ghar" })}>
+      <Marker position={[HOME.lat, HOME.lng]} icon={makeIcon({ glyph: "home", color: "#7A1F2B", size: 34, square: true, label: "Home" })}>
         <Popup>
           <strong>{HOME.label}</strong>
           <br />

@@ -1,6 +1,6 @@
 // Self-check for the WhatsApp parser: npx tsx lib/whatsappCommands.check.ts
 import assert from "node:assert/strict";
-import { parseWaCommand, type WaCommand } from "./whatsappCommands";
+import { parseWaCommand, WA_HELP, type WaCommand } from "./whatsappCommands";
 import { PLACES } from "./seed";
 
 const NOW = Date.parse("2026-12-10T09:00:00+05:30");
@@ -38,6 +38,26 @@ t = task(parseWaCommand("station pe chacha ko lena hai", NOW));
 assert.equal(t.pickup.label, PLACES.charbagh.label);
 assert.equal(t.time, "2026-12-10T09:00:00+05:30");
 
+// English input
+t = task(parseWaCommand("Pick up Bua ji from Charbagh at 9pm, 3 people", NOW));
+assert.equal(t.pickup.label, PLACES.charbagh.label);
+assert.equal(t.drop.label, PLACES.ghar.label);
+assert.equal(t.time, "2026-12-10T21:00:00+05:30");
+assert.equal(t.peopleCount, 3);
+
+t = task(parseWaCommand("Drop Mausi at the airport at 5:30", NOW));
+assert.equal(t.pickup.label, PLACES.ghar.label);
+assert.equal(t.drop.label, PLACES.airport.label);
+assert.equal(t.time, "2026-12-10T17:30:00+05:30");
+
+t = task(parseWaCommand("Take Chacha ji to Charbagh from the airport tomorrow at 11am, 2 people", NOW));
+assert.equal(t.pickup.label, PLACES.airport.label);
+assert.equal(t.drop.label, PLACES.charbagh.label);
+assert.equal(t.time, "2026-12-11T11:00:00+05:30");
+assert.equal(t.peopleCount, 2);
+
+assert.match(WA_HELP, /^Send Shaadi OS a task/);
+for (const line of WA_HELP.split("\n").filter((l) => l.startsWith("• "))) task(parseWaCommand(line.slice(2), NOW)); // help examples must parse
 assert.equal(parseWaCommand("help").kind, "help");
 assert.equal(parseWaCommand("kya haal hai").kind, "help");
 assert.equal(parseWaCommand("ghar aa jao").kind, "help");

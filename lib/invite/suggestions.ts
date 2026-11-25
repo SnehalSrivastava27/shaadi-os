@@ -10,14 +10,14 @@ export function functionSuggestions(config: WeddingConfig): string[] {
     .filter((key) => !existing.has(key))
     .map((key) => FUNCTION_CATALOG.find((f) => f.key === key)!)
     .filter((f) => f && !existingNames.some((n) => f.keywords.some((k) => n.includes(k))))
-    .map((f) => `${f.name} add karo`);
+    .map((f) => `Add ${f.name}`);
 }
 
 export const QUICK_STARTS = [
-  { label: "Rajasthani shaadi", prompt: "Riya aur Arjun ki shaadi, 12 Dec, Jaipur. Rajasthani theme. Haldi, mehendi, sangeet aur pheras." },
-  { label: "Punjabi shaadi", prompt: "Simran aur Karan ki Punjabi shaadi, 20 Jan, Amritsar. Chooda, jaago, sangeet aur anand karaj." },
-  { label: "South Indian shaadi", prompt: "Meenakshi aur Karthik ki South Indian shaadi, 5 Feb, Chennai. Nalangu, muhurtham aur reception." },
-  { label: "Bengali shaadi", prompt: "Ananya aur Sourav ki Bengali shaadi, 14 Feb, Kolkata. Gaye holud, biye aur bou bhaat." },
+  { label: "Rajasthani wedding", prompt: "Riya and Arjun's wedding, 12 Dec, Jaipur. Rajasthani theme. Haldi, mehendi, sangeet and pheras." },
+  { label: "Punjabi wedding", prompt: "Simran and Karan's Punjabi wedding, 20 Jan, Amritsar. Chooda, jaago, sangeet and anand karaj." },
+  { label: "South Indian wedding", prompt: "Meenakshi and Karthik's South Indian wedding, 5 Feb, Chennai. Nalangu, muhurtham and reception." },
+  { label: "Bengali wedding", prompt: "Ananya and Sourav's Bengali wedding, 14 Feb, Kolkata. Gaye holud, biye and bou bhaat." },
 ];
 
-export const EDIT_EXAMPLES = ["Colour maroon karo", "Sangeet 8 baje kar do", "Hindi mein bhi dikhao", "Punjabi theme lagao"];
+export const EDIT_EXAMPLES = ["Make the colour maroon", "Move sangeet to 8 pm", "Show Hindi too", "Use the Punjabi theme"];

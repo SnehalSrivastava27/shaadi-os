@@ -74,20 +74,20 @@ export function pickVehicle(input: AssignInput, helper: Helper): Vehicle | undef
 export function autoAssign(input: AssignInput): AssignResult {
   const ranked = rankHelpers(input);
   if (ranked.length === 0) {
-    return { ok: false, reason: "no_helpers", message: "Koi free helper nahi hai.", ranked };
+    return { ok: false, reason: "no_helpers", message: "No helper is free.", ranked };
   }
   const best = ranked[0];
   if (best.distanceKm > MAX_DISTANCE_KM) {
     return {
       ok: false,
       reason: "too_far",
-      message: `Sabse paas wale helper (${best.helper.name}) bhi ${best.distanceKm.toFixed(1)} km door hain.`,
+      message: `Even the nearest helper (${best.helper.name}) is ${best.distanceKm.toFixed(1)} km away.`,
       ranked,
     };
   }
   const vehicle = pickVehicle(input, best.helper);
   if (!vehicle && input.task.type === "pickup") {
-    return { ok: false, reason: "no_vehicle", message: `${input.task.peopleCount} logon ke liye koi gaadi free nahi hai.`, ranked };
+    return { ok: false, reason: "no_vehicle", message: `No free car has room for ${input.task.peopleCount} people.`, ranked };
   }
   return { ok: true, helper: best.helper, vehicle, distanceKm: best.distanceKm, ranked };
 }

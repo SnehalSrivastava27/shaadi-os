@@ -51,7 +51,7 @@ export function EntitySheet({ selection, onClose }: { selection: MapSelection | 
           <div className="grid gap-2 text-sm">
             <p className="flex items-center gap-2">
               <Clock className="text-muted-foreground size-4" /> Last seen:{" "}
-              <span className="font-medium">{pos ? `${timeAgo(pos.timestamp, now)} (${formatClock(pos.timestamp)})` : "kabhi nahi"}</span>
+              <span className="font-medium">{pos ? `${timeAgo(pos.timestamp, now)} (${formatClock(pos.timestamp)})` : "never"}</span>
             </p>
             {pos && pos.speed > 0 && (
               <p className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export function EntitySheet({ selection, onClose }: { selection: MapSelection | 
             )}
             {vehicle && (
               <p className="flex items-center gap-2">
-                <UserRound className="text-muted-foreground size-4" /> Driver: <span className="font-medium">{driver?.name ?? "Koi nahi"}</span>
+                <UserRound className="text-muted-foreground size-4" /> Driver: <span className="font-medium">{driver?.name ?? "None"}</span>
               </p>
             )}
           </div>
@@ -82,16 +82,16 @@ export function EntitySheet({ selection, onClose }: { selection: MapSelection | 
                   <TaskStatusBadge status={currentTask.status} />
                 </div>
                 <Button size="sm" variant="outline" className="mt-2" asChild>
-                  <Link href={`/tasks/${currentTask.id}`}>Task kholo</Link>
+                  <Link href={`/tasks/${currentTask.id}`}>Open task</Link>
                 </Button>
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">Abhi koi task nahi.</p>
+              <p className="text-muted-foreground text-sm">No task right now.</p>
             )}
           </div>
           {helper && (
             <Button variant="secondary" asChild>
-              <Link href={`/helper/${helper.id}`}>{helper.name} ka helper view</Link>
+              <Link href={`/helper/${helper.id}`}>{helper.name}’s helper view</Link>
             </Button>
           )}
         </div>

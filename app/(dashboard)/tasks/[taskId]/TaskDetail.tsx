@@ -40,9 +40,9 @@ export function TaskDetail({ taskId }: { taskId: string }) {
   if (!task) {
     return (
       <div className="p-6">
-        <p className="text-muted-foreground">Ye task nahi mila. Shayad demo reset ho gaya.</p>
+        <p className="text-muted-foreground">Couldn’t find this task. The demo may have been reset.</p>
         <Button variant="link" asChild className="px-0">
-          <Link href="/tasks">← Saare tasks</Link>
+          <Link href="/tasks">← All tasks</Link>
         </Button>
       </div>
     );
@@ -51,7 +51,7 @@ export function TaskDetail({ taskId }: { taskId: string }) {
   const replaying = cursor !== undefined;
   const startReplay = () => {
     if (trail.length < 2) {
-      toast.info("Replay ke liye abhi trip ka data nahi hai");
+      toast.info("No trip data to replay yet");
       return;
     }
     if (timer.current) clearInterval(timer.current);
@@ -63,7 +63,7 @@ export function TaskDetail({ taskId }: { taskId: string }) {
         if (timer.current) clearInterval(timer.current);
         timer.current = null;
         setCursor(undefined);
-        toast.success("Replay khatam");
+        toast.success("Replay finished");
         return;
       }
       setCursor(i);
@@ -94,7 +94,7 @@ export function TaskDetail({ taskId }: { taskId: string }) {
                 <Clock className="size-4" /> {formatDateTime(task.time)}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="size-4" /> {task.peopleCount} log
+                <Users className="size-4" /> {task.peopleCount} people
               </span>
               <span className="capitalize">{task.type}</span>
             </p>
@@ -196,7 +196,7 @@ export function TaskDetail({ taskId }: { taskId: string }) {
                   )}
                 </div>
               ) : (
-                <p className="text-muted-foreground">Abhi kisi ko assign nahi kiya.</p>
+                <p className="text-muted-foreground">Not assigned to anyone yet.</p>
               )}
               {guest && <p className="text-muted-foreground">Guest: {guest.name} · {guest.phone}</p>}
               {["accepted", "in_progress", "external", "completed"].includes(task.status) && (helper || task.externalBooking) && <GuestMessageCard task={task} />}
@@ -208,7 +208,7 @@ export function TaskDetail({ taskId }: { taskId: string }) {
                     variant="accent"
                     onClick={() => {
                       const r = dispatchTask(task.id);
-                      if (r?.ok) toast.success(`${r.helper.name} ko offer bheja`);
+                      if (r?.ok) toast.success(`Offer sent to ${r.helper.name}`);
                     }}
                   >
                     <Wand2 /> Auto-assign
@@ -216,11 +216,11 @@ export function TaskDetail({ taskId }: { taskId: string }) {
                 )}
                 {task.status === "offered" && helper && (
                   <Button size="sm" variant="outline" asChild>
-                    <Link href={`/helper/${helper.id}`}>{helper.name} ka view</Link>
+                    <Link href={`/helper/${helper.id}`}>{helper.name}’s view</Link>
                   </Button>
                 )}
                 {canTransition(task.status, "external") && (
-                  <Button size="sm" variant="outline" onClick={() => openFallback({ taskId: task.id, reason: "Cab book karni hai?" })}>
+                  <Button size="sm" variant="outline" onClick={() => openFallback({ taskId: task.id, reason: "Need to book a cab?" })}>
                     <Car /> Uber / Rapido
                   </Button>
                 )}
@@ -243,7 +243,7 @@ export function TaskDetail({ taskId }: { taskId: string }) {
                     variant="ghost"
                     onClick={() => {
                       const r = cancelTask(task.id);
-                      if (r.ok) toast("Task cancel kiya");
+                      if (r.ok) toast("Task canceled");
                     }}
                   >
                     <XCircle /> Cancel

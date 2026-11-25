@@ -19,7 +19,7 @@ import { THEME_PRESETS } from "@/lib/invite/culture";
 import { lerp } from "@/lib/geo";
 
 export const PLACES = {
-  ghar: { id: "ghar", label: "Ghar (Gomti Nagar)", lat: 26.8563, lng: 80.9912, kind: "home" },
+  ghar: { id: "ghar", label: "Home (Gomti Nagar)", lat: 26.8563, lng: 80.9912, kind: "home" },
   charbagh: { id: "charbagh", label: "Charbagh Railway Station", lat: 26.8318, lng: 80.92, kind: "station" },
   airport: { id: "airport", label: "Lucknow Airport (CCS)", lat: 26.7606, lng: 80.8893, kind: "airport" },
   gomtiNagarStation: { id: "gomti-nagar-station", label: "Gomti Nagar Railway Station", lat: 26.8436, lng: 81.0158, kind: "station" },
@@ -34,9 +34,9 @@ export function createSeedConfig(): WeddingConfig {
     brideName: "Riya",
     groomName: "Arjun",
     city: "Lucknow",
-    theme: "rajasthani",
-    palette: { ...THEME_PRESETS.rajasthani.palette },
-    welcomeMessage: { ...THEME_PRESETS.rajasthani.welcomeMessage },
+    theme: "mandap",
+    palette: { ...THEME_PRESETS.mandap.palette },
+    welcomeMessage: { ...THEME_PRESETS.mandap.welcomeMessage },
     showHindi: true,
     published: true,
     functions: [
@@ -45,10 +45,10 @@ export function createSeedConfig(): WeddingConfig {
         name: "Haldi",
         date: "2026-12-10",
         time: "10:00",
-        venueName: "Ghar ka aangan, Gomti Nagar",
+        venueName: "Home courtyard, Gomti Nagar",
         lat: 26.8563,
         lng: 80.9912,
-        dressCode: "Yellow, purane kapde chalenge!",
+        dressCode: "Yellow. Old clothes are fine!",
         description: "Turmeric paste is applied to the bride for glow and good luck. Expect to get messy.",
       },
       {
@@ -132,7 +132,7 @@ const GUESTS: GuestSeed[] = [
   { name: "Pinky Didi", side: "bride", fns: ALL_FN, status: "yes", headcount: 2, food: "non-veg" },
   { name: "Mausi ji (Delhi)", side: "bride", fns: ALL_FN, status: "yes", headcount: 2, food: "jain", arrival: airport("2026-12-10T11:00:00+05:30") },
   { name: "Verma Aunty", side: "groom", fns: ["fn-wedding", "fn-reception"], status: "pending", headcount: 2, food: "veg" },
-  { name: "Gupta Parivaar", side: "bride", fns: ["fn-wedding", "fn-reception"], status: "yes", headcount: 5, food: "veg" },
+  { name: "Gupta family", side: "bride", fns: ["fn-wedding", "fn-reception"], status: "yes", headcount: 5, food: "veg" },
   { name: "Tiwari ji", side: "groom", fns: ["fn-wedding"], status: "no", headcount: 0, food: "veg" },
   { name: "Neha (college friend)", side: "bride", fns: ["fn-sangeet", "fn-wedding"], status: "yes", headcount: 1, food: "non-veg", arrival: charbagh("2026-12-11T07:30:00+05:30") },
   { name: "Rahul & Simran", side: "groom", fns: ["fn-sangeet", "fn-wedding", "fn-reception"], status: "yes", headcount: 2, food: "non-veg", arrival: airport("2026-12-11T13:15:00+05:30") },
@@ -141,17 +141,17 @@ const GUESTS: GuestSeed[] = [
   { name: "Srivastava Uncle", side: "groom", fns: ["fn-wedding", "fn-reception"], status: "pending", headcount: 3, food: "veg" },
   { name: "Fufa ji (Varanasi)", side: "groom", fns: ALL_FN, status: "yes", headcount: 2, food: "veg", arrival: charbagh("2026-12-10T20:10:00+05:30") },
   { name: "Chhoti Bua", side: "groom", fns: ["fn-haldi", "fn-mehendi", "fn-sangeet", "fn-wedding"], status: "yes", headcount: 3, food: "veg" },
-  { name: "Mishra ji (padosi)", side: "bride", fns: ["fn-wedding", "fn-reception"], status: "yes", headcount: 4, food: "veg" },
+  { name: "Mishra ji (neighbour)", side: "bride", fns: ["fn-wedding", "fn-reception"], status: "yes", headcount: 4, food: "veg" },
   { name: "Kapoor Aunty (Chandigarh)", side: "groom", fns: ["fn-sangeet", "fn-wedding", "fn-reception"], status: "yes", headcount: 2, food: "non-veg", arrival: airport("2026-12-11T10:40:00+05:30") },
-  { name: "Ankit (Arjun ka office)", side: "groom", fns: ["fn-reception"], status: "yes", headcount: 1, food: "non-veg" },
-  { name: "Saxena Parivaar", side: "bride", fns: ["fn-wedding", "fn-reception"], status: "no", headcount: 0, food: "veg" },
-  { name: "Riya ki saheliyan", side: "bride", fns: ["fn-mehendi", "fn-sangeet", "fn-wedding"], status: "yes", headcount: 3, food: "non-veg" },
+  { name: "Ankit (Arjun's office)", side: "groom", fns: ["fn-reception"], status: "yes", headcount: 1, food: "non-veg" },
+  { name: "Saxena family", side: "bride", fns: ["fn-wedding", "fn-reception"], status: "no", headcount: 0, food: "veg" },
+  { name: "Riya's friends", side: "bride", fns: ["fn-mehendi", "fn-sangeet", "fn-wedding"], status: "yes", headcount: 3, food: "non-veg" },
   { name: "Agarwal Uncle", side: "bride", fns: ["fn-reception"], status: "pending", headcount: 2, food: "jain" },
   { name: "Masi ji (Mumbai)", side: "groom", fns: ALL_FN, status: "yes", headcount: 2, food: "veg", arrival: airport("2026-12-10T14:20:00+05:30") },
   { name: "Khanna Uncle", side: "groom", fns: ["fn-wedding", "fn-reception"], status: "yes", headcount: 3, food: "non-veg" },
   { name: "Bhatia Aunty", side: "bride", fns: ["fn-sangeet"], status: "pending", headcount: 1, food: "veg" },
   { name: "Yadav ji", side: "bride", fns: ["fn-wedding"], status: "yes", headcount: 2, food: "veg" },
-  { name: "Choudhary Parivaar (Jaipur)", side: "groom", fns: ALL_FN, status: "yes", headcount: 4, food: "veg", arrival: charbagh("2026-12-10T06:15:00+05:30") },
+  { name: "Choudhary family (Jaipur)", side: "groom", fns: ALL_FN, status: "yes", headcount: 4, food: "veg", arrival: charbagh("2026-12-10T06:15:00+05:30") },
 ];
 
 function createGuests(): Guest[] {
@@ -180,12 +180,12 @@ function createGuests(): Guest[] {
 
 function createHelpers(): Helper[] {
   return [
-    { id: "h-rohit", name: "Rohit Bhaiya", relation: "Cousin (Riya ke tau ji ka beta)", phone: "+91 98390 11223", availability: "online", status: "free", locationSharing: true },
+    { id: "h-rohit", name: "Rohit Bhaiya", relation: "Riya's cousin (tau ji's son)", phone: "+91 98390 11223", availability: "online", status: "free", locationSharing: true },
     { id: "h-pinku", name: "Pinku", relation: "Cousin", phone: "+91 97944 55120", availability: "online", status: "free", locationSharing: true },
-    { id: "h-chacha", name: "Chacha ji", relation: "Riya ke chacha", phone: "+91 94150 32876", availability: "online", status: "busy", locationSharing: true, currentTaskId: "t-mithai" },
-    { id: "h-mama", name: "Mama ji", relation: "Riya ke mama", phone: "+91 94153 77410", availability: "offline", status: "free", locationSharing: true },
+    { id: "h-chacha", name: "Chacha ji", relation: "Riya's uncle (chacha)", phone: "+91 94150 32876", availability: "online", status: "busy", locationSharing: true, currentTaskId: "t-mithai" },
+    { id: "h-mama", name: "Mama ji", relation: "Riya's uncle (mama)", phone: "+91 94153 77410", availability: "offline", status: "free", locationSharing: true },
     { id: "h-ramesh", name: "Ramesh", relation: "Driver", phone: "+91 99355 60981", availability: "online", status: "free", locationSharing: true },
-    { id: "h-sonu", name: "Sonu", relation: "Cousin (Arjun ka bhai)", phone: "+91 88400 21764", availability: "online", status: "unavailable", locationSharing: false },
+    { id: "h-sonu", name: "Sonu", relation: "Cousin (Arjun's brother)", phone: "+91 88400 21764", availability: "online", status: "unavailable", locationSharing: false },
   ];
 }
 
@@ -259,7 +259,7 @@ export function createSeedTasks(now: number, opts: SeedOptions = {}): Task[] {
   const tasks: Task[] = [
     {
       id: "t-bua",
-      title: "Bua ji ko Charbagh station se laana hai",
+      title: "Pick up Bua ji from Charbagh station",
       type: "pickup",
       waypoints: [
         { label: PLACES.charbagh.label, lat: PLACES.charbagh.lat, lng: PLACES.charbagh.lng },
@@ -269,12 +269,12 @@ export function createSeedTasks(now: number, opts: SeedOptions = {}): Task[] {
       guestId: "g01",
       peopleCount: 3,
       status: "created",
-      activity: [act(now - 20 * min, "Organizer", "Task created: Lucknow Mail se aa rahi hain, coach S4")],
+      activity: [act(now - 20 * min, "Organizer", "Task created: arriving on the Lucknow Mail, coach S4")],
       createdAt: now - 20 * min,
     },
     {
       id: "t-mithai",
-      title: "Chappan Bhog se mithai ke dabbe laane hain",
+      title: "Collect boxes of mithai from Chappan Bhog",
       type: "errand",
       waypoints: [
         { label: PLACES.chappanBhog.label, lat: PLACES.chappanBhog.lat, lng: PLACES.chappanBhog.lng },
@@ -286,7 +286,7 @@ export function createSeedTasks(now: number, opts: SeedOptions = {}): Task[] {
       assignedVehicleId: "v-swift",
       status: "in_progress",
       activity: [
-        act(now - 15 * min, "Organizer", "Task created: 200 dabbe kaju katli + motichoor"),
+        act(now - 15 * min, "Organizer", "Task created: 200 boxes of kaju katli + motichoor"),
         act(now - 14 * min, "System", "Offered to Chacha ji with Swift Dzire (2.9 km away)"),
         act(now - 12 * min, "Chacha ji", "Accepted the task"),
         act(now - 11 * min, "Chacha ji", "Started the trip"),
@@ -305,7 +305,7 @@ export function createSeedTasks(now: number, opts: SeedOptions = {}): Task[] {
     },
     {
       id: "t-sharma",
-      title: "Sharma Uncle ko Airport se laana hai",
+      title: "Pick up Sharma Uncle from the airport",
       type: "pickup",
       waypoints: [
         { label: PLACES.airport.label, lat: PLACES.airport.lat, lng: PLACES.airport.lng },
@@ -323,7 +323,7 @@ export function createSeedTasks(now: number, opts: SeedOptions = {}): Task[] {
         act(now - 198 * min, "Ramesh", "Accepted the task"),
         act(now - 180 * min, "Ramesh", "Started the trip"),
         act(now - 160 * min, "Ramesh", "Reached Lucknow Airport (CCS), guest picked up"),
-        act(now - 141 * min, "Ramesh", "Reached Ghar. Task completed"),
+        act(now - 141 * min, "Ramesh", "Reached Home (Gomti Nagar). Task completed"),
       ],
       createdAt: now - 200 * min,
     },
@@ -334,10 +334,10 @@ export function createSeedTasks(now: number, opts: SeedOptions = {}): Task[] {
 function createTimeline(now: number): TimelineEvent[] {
   const min = 60_000;
   return [
-    { id: "tl-1", timestamp: now - 141 * min, text: "Sharma Uncle Ghar pahunch gaye (Ramesh, Scorpio)", taskId: "t-sharma" },
-    { id: "tl-2", timestamp: now - 20 * min, text: "Naya task: Bua ji ko Charbagh station se laana hai", taskId: "t-bua" },
-    { id: "tl-3", timestamp: now - 12 * min, text: "Chacha ji ne mithai wala task accept kiya", taskId: "t-mithai" },
-    { id: "tl-4", timestamp: now - 11 * min, text: "Chacha ji Chappan Bhog ki taraf nikle", taskId: "t-mithai" },
+    { id: "tl-1", timestamp: now - 141 * min, text: "Sharma Uncle reached home (Ramesh, Scorpio)", taskId: "t-sharma" },
+    { id: "tl-2", timestamp: now - 20 * min, text: "New task: Pick up Bua ji from Charbagh station", taskId: "t-bua" },
+    { id: "tl-3", timestamp: now - 12 * min, text: "Chacha ji accepted the mithai task", taskId: "t-mithai" },
+    { id: "tl-4", timestamp: now - 11 * min, text: "Chacha ji left for Chappan Bhog", taskId: "t-mithai" },
   ];
 }
 

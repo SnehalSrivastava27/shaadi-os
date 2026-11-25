@@ -26,14 +26,14 @@ export function DemoRunner() {
     };
 
     try {
-      caption("Demo shuru! Fresh shaadi data load kar rahe hain…");
+      caption("Demo starting! Loading fresh wedding data…");
       s().resetDemo({ forDemo: true });
       await step(1500);
 
       // 1. Create the task
-      caption("1/4 · Bua ji 3 log ke saath Lucknow Mail se Charbagh pahunch rahi hain. Task banate hain…");
+      caption("1/4 · Bua ji and family (3 people) are arriving at Charbagh on the Lucknow Mail. Let's create a task…");
       const taskId = s().createTask({
-        title: "Bua ji ko Charbagh station se laana hai",
+        title: "Pick up Bua ji from Charbagh station",
         type: "pickup",
         pickup: { label: PLACES.charbagh.label, lat: PLACES.charbagh.lat, lng: PLACES.charbagh.lng },
         drop: { label: PLACES.ghar.label, lat: PLACES.ghar.lat, lng: PLACES.ghar.lng },
@@ -48,7 +48,7 @@ export function DemoRunner() {
       const r = s().dispatchTask(taskId, { silentFallback: true });
       if (!r?.ok) throw new Error("Auto-assign failed");
       caption(
-        `2/4 · Auto-assign: sabse paas free helper ${r.helper.name} (${r.distanceKm.toFixed(1)} km), aur unki ${r.vehicle?.name ?? "gaadi"} (${r.vehicle?.seats} seats). Offer bheja!`
+        `2/4 · Auto-assign: nearest free helper ${r.helper.name} (${r.distanceKm.toFixed(1)} km), with the ${r.vehicle?.name ?? "car"} (${r.vehicle?.seats} seats). Offer sent!`
       );
       await step(3000);
 
@@ -62,7 +62,7 @@ export function DemoRunner() {
         s().helpers.find((h) => h.id === t.assignedHelperId),
         s().vehicles.find((v) => v.id === t.assignedVehicleId)
       );
-      caption(`3/4 · ${r.helper.name} ne accept kiya! Guest ko message: "${msg}"`);
+      caption(`3/4 · ${r.helper.name} accepted! Message to the guest: "${msg}"`);
       await step(3500);
       let lastLeg = -1;
       for (;;) {
@@ -74,24 +74,24 @@ export function DemoRunner() {
           lastLeg = task.sim.leg;
           caption(
             lastLeg === 0
-              ? `3/4 · ${r.helper.name} Charbagh station ki taraf… (trail map par dekhiye)`
-              : `3/4 · Bua ji gaadi mein baith gayi! Ab Ghar ki taraf 🚗`
+              ? `3/4 · ${r.helper.name} is heading to Charbagh station… (watch the trail on the map)`
+              : `3/4 · Bua ji is in the car! Now heading home 🚗`
           );
         }
         await step(2000);
       }
-      caption("3/4 · Bua ji Ghar pahunch gayi! Task complete ✅");
+      caption("3/4 · Bua ji has reached home! Task complete ✅");
       await step(2500);
 
       // 4. Everyone busy -> fallback
-      caption("4/4 · Ab maan lijiye sab helpers busy hain… aur Mausi ji Airport pe utar gayi hain.");
+      caption("4/4 · Now suppose every helper is busy… and Mausi ji has just landed at the airport.");
       // Finish any other running errand first so nobody frees up mid-step.
       s()
         .tasks.filter((x) => x.status === "in_progress")
         .forEach((x) => s().completeTask(x.id, "Demo"));
       s().setAllHelpersBusy();
       const t2 = s().createTask({
-        title: "Mausi ji ko Airport se laana hai",
+        title: "Pick up Mausi ji from the airport",
         type: "pickup",
         pickup: { label: PLACES.airport.label, lat: PLACES.airport.lat, lng: PLACES.airport.lng },
         drop: { label: PLACES.ghar.label, lat: PLACES.ghar.lat, lng: PLACES.ghar.lng },
@@ -102,19 +102,19 @@ export function DemoRunner() {
       s().setFocus(PLACES.airport.lat, PLACES.airport.lng, 12);
       await step(2500);
       s().dispatchTask(t2);
-      caption("Koi free nahi! Uber ya Rapido se book kijiye 👆 (Settings mein 'Reset demo data' se sab wapas)");
+      caption("Nobody is free! Book an Uber or Rapido 👆 (use 'Reset demo data' in Settings to start over)");
       await sleep(7000);
       s().setDemo({ running: false, caption: null });
     } catch (e) {
       s().setDemo({ running: false, caption: null });
-      if (e instanceof Error && e.message !== "cancelled") toast.error(`Demo ruk gaya: ${e.message}`);
+      if (e instanceof Error && e.message !== "cancelled") toast.error(`Demo stopped: ${e.message}`);
     }
   };
 
   const stop = () => {
     cancelled.current = true;
     useShaadiStore.getState().setDemo({ running: false, caption: null });
-    toast("Demo band kiya");
+    toast("Demo stopped");
   };
 
   return (

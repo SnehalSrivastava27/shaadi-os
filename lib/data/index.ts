@@ -139,7 +139,7 @@ export function cateringText(line: CateringLine, config: WeddingConfig): string 
     `${formatDate(line.date)}, ${formatTime(line.time)} @ ${line.venueName}`,
     `Total plates: ${line.total}`,
     `Veg: ${line.food.veg} | Jain: ${line.food.jain} | Non-veg: ${line.food["non-veg"]}`,
-    line.pending ? `(${line.pending} parivaar ka jawab abhi baaki hai)` : "",
+    line.pending ? `(${line.pending} ${line.pending === 1 ? "family has" : "families have"} not replied yet)` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -179,11 +179,11 @@ export function formatClock(ts: number): string {
 
 export function timeAgo(ts: number, now: number): string {
   const s = Math.max(0, Math.round((now - ts) / 1000));
-  if (s < 10) return "abhi abhi";
-  if (s < 60) return `${s} sec pehle`;
+  if (s < 10) return "just now";
+  if (s < 60) return `${s} sec ago`;
   const m = Math.round(s / 60);
-  if (m < 60) return `${m} min pehle`;
+  if (m < 60) return `${m} min ago`;
   const h = Math.round(m / 60);
-  if (h < 24) return `${h} ghante pehle`;
-  return `${Math.round(h / 24)} din pehle`;
+  if (h < 24) return `${h} ${h === 1 ? "hour" : "hours"} ago`;
+  return `${Math.round(h / 24)} ${Math.round(h / 24) === 1 ? "day" : "days"} ago`;
 }

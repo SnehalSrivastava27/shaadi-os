@@ -6,14 +6,14 @@ export function shortName(name: string): string {
 }
 
 export function guestMessage(task: Task, guest: Guest | undefined, helper: Helper | undefined, vehicle: Vehicle | undefined): string {
-  const who = guest ? shortName(guest.name) : "Namaste";
+  const who = guest ? `Hi ${shortName(guest.name)}` : "Hello";
   if (task.status === "external" && task.externalBooking) {
     const b = task.externalBooking;
-    return `${who}, aapke liye ${task.externalProvider} book ho gayi hai. Driver: ${b.driverName}, Gaadi: ${b.car} ${b.plate}. ${b.etaMinutes} min mein pahunch rahe hain.`;
+    return `${who}, we've booked a ${task.externalProvider} for you. Driver: ${b.driverName}, Car: ${b.car} ${b.plate}. Arriving in ${b.etaMinutes} min.`;
   }
-  const helperName = helper ? shortName(helper.name).replace(/ Bhaiya$/, "") : "Ghar se koi";
-  const car = vehicle ? ` Gaadi: ${vehicle.name.split(" ")[0]} ${vehicle.plateNumber}.` : "";
-  return `${who}, ${helperName} aapko lene aa rahe hain.${car} Pahunch kar call karenge. 🙏`;
+  const helperName = helper ? shortName(helper.name).replace(/ Bhaiya$/, "") : "Someone from the family";
+  const car = vehicle ? ` Car: ${vehicle.name.split(" ")[0]} ${vehicle.plateNumber}.` : "";
+  return `${who}, ${helperName} is coming to pick you up.${car} They'll call when they arrive. 🙏`;
 }
 
 export function inviteUrl(guestId: string): string {

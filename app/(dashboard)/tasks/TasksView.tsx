@@ -13,7 +13,7 @@ export function TasksView() {
     <>
       <PageHeader
         title="Tasks"
-        subtitle="Har pickup aur errand ek dispatch order hai: created → offered → accepted → on the way → done."
+        subtitle="Every pickup and errand is a dispatch order: created → offered → accepted → on the way → done."
         actions={
           <Button onClick={() => setOpen(true)}>
             <Plus /> New task

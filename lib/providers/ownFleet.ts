@@ -10,7 +10,7 @@ import type { BookResult, RideProvider, RideRequest } from "./types";
 export function createOwnFleetProvider(getInput: (req: RideRequest) => AssignInput): RideProvider {
   return {
     id: "own",
-    displayName: "Ghar ki gaadi (own fleet)",
+    displayName: "Family car (own fleet)",
     async quote(req) {
       const result = autoAssign(getInput(req));
       if (!result.ok) throw new Error(result.message);

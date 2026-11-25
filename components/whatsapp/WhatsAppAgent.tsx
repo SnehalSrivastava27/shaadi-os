@@ -13,9 +13,9 @@ function handle(text: string): string {
   const { title, pickup, drop, time, peopleCount } = cmd.input;
   const r = s.dispatchTask(s.createTask(cmd.input));
   const when = new Date(time).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
-  const head = `✅ Task bana: ${title}\n${pickup.label} → ${drop.label}, ${when}, ${peopleCount} log`;
-  if (r?.ok) return `${head}\n🚗 ${r.helper.name}${r.vehicle ? ` (${r.vehicle.name})` : ""} ko offer bheja`;
-  return `${head}\n⚠️ Koi free nahi. ${r && !r.ok ? r.message : ""} App mein Uber/Rapido se book kijiye.`;
+  const head = `✅ Task created: ${title}\n${pickup.label} → ${drop.label}, ${when}, ${peopleCount} ${peopleCount === 1 ? "person" : "people"}`;
+  if (r?.ok) return `${head}\n🚗 ${r.helper.name}${r.vehicle ? ` (${r.vehicle.name})` : ""}: offer sent`;
+  return `${head}\n⚠️ No one is free. ${r && !r.ok ? r.message : ""} Book an Uber/Rapido in the app.`;
 }
 
 /** Polls the WhatsApp bridge inbox, turns each self-chat message into a task and replies. Renders nothing. */

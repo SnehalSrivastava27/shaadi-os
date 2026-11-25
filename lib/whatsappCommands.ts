@@ -1,5 +1,6 @@
-// Rule-based Hinglish parser for WhatsApp commands, e.g.
-// "Bua ji ko charbagh se laana hai 3 baje, 3 log" -> pickup task Charbagh -> Ghar at 15:00.
+// Rule-based parser for WhatsApp commands in Hinglish or English, e.g.
+// "Bua ji ko charbagh se laana hai 3 baje, 3 log" or "Pick up Bua ji from Charbagh at 3pm, 3 people"
+// -> pickup task Charbagh -> Ghar at 15:00. Replies/help are English.
 import { PLACES } from "@/lib/seed";
 import type { NewTaskInput } from "@/stores/useShaadiStore";
 
@@ -15,11 +16,12 @@ const PLACE_PATTERNS: [PlaceKey, RegExp][] = [
 ];
 
 export const WA_HELP = [
-  "Shaadi OS ko kaam bhejiye, jaise:",
-  "• Bua ji ko charbagh se laana hai 3 baje, 3 log",
-  "• Mausi ko airport chhodna hai 5:30 baje",
-  "• Chappan bhog se mithai lani hai kal 11 baje",
-  "Jagah: charbagh/station, airport, gomti nagar, chappan bhog/mithai, ghar",
+  "Send Shaadi OS a task, for example:",
+  "• Pick up Bua ji from Charbagh at 3pm, 3 people",
+  "• Drop Mausi at the airport at 5:30",
+  "• Get sweets from Chappan Bhog tomorrow at 11am",
+  'Hinglish works too: "Bua ji ko charbagh se laana hai 3 baje, 3 log"',
+  "Places: Charbagh/station, airport, Gomti Nagar, Chappan Bhog/sweets, home",
 ].join("\n");
 
 export type WaCommand = { kind: "help" } | { kind: "task"; input: NewTaskInput };
@@ -31,14 +33,14 @@ function istParts(ms: number) {
 
 function parseTime(s: string, now: number): string {
   const m = s.match(/\b(\d{1,2})[:.](\d{2})\b/) ?? s.match(/\b(\d{1,2})\s*(?:baje|bje|pm|am)\b/);
-  const day = istParts(now + (/\bkal\b/.test(s) ? 86_400_000 : 0));
+  const day = istParts(now + (/\b(kal|tomorrow)\b/.test(s) ? 86_400_000 : 0));
   let h = istParts(now).h;
   let min = istParts(now).min;
   if (m) {
     h = Number(m[1]) % 24;
     min = Number(m[2] ?? 0) % 60;
-    const am = /\b(am|subah|savere)\b/.test(s);
-    const pm = /\b(pm|shaam|sham|raat|dopahar)\b/.test(s);
+    const am = /(\d|\b)am\b|\b(subah|savere|morning)\b/.test(s);
+    const pm = /(\d|\b)pm\b|\b(shaam|sham|raat|dopahar|evening|afternoon|night|tonight)\b/.test(s);
     // ponytail: "3 baje" without subah/shaam is read as 3 PM (1-7 -> PM); fine for wedding pickups.
     if (h < 12 && (pm || (!am && h >= 1 && h <= 7))) h += 12;
   }
@@ -51,7 +53,7 @@ export function parseWaCommand(raw: string, now = Date.now()): WaCommand {
   let s = text.toLowerCase();
   if (!s || /^(help|madad|\?|hi|hello)\b/.test(s)) return { kind: "help" };
 
-  // Find places with position and what follows them ("se" = from, "chhod"/"tak" = to).
+  // Find places with position and what follows them ("se"/"from" = from, "chhod"/"drop" = to).
   const found: { key: PlaceKey; at: number; after: string }[] = [];
   for (const [key, re] of PLACE_PATTERNS) {
     const m = s.match(re);
@@ -67,7 +69,7 @@ export function parseWaCommand(raw: string, now = Date.now()): WaCommand {
   let from: PlaceKey;
   let to: PlaceKey;
   if (others.length >= 2) {
-    const src = others.find((f) => /^\s*se\b/.test(f.after)) ?? others[0];
+    const src = others.find((f) => /^\s*se\b/.test(f.after) || /\bfrom\s+(the\s+)?$/.test(s.slice(Math.max(0, f.at - 10), f.at))) ?? others[0];
     from = src.key;
     to = others.find((f) => f !== src)!.key;
   } else if (dropping && !/^\s*se\b/.test(others[0].after)) {
@@ -79,7 +81,7 @@ export function parseWaCommand(raw: string, now = Date.now()): WaCommand {
   }
 
   const people = s.match(/\b(\d{1,2})\s*(log|logo|logon|jan|people|members?|guests?)\b/);
-  const errand = from === "chappanBhog" || to === "chappanBhog" || /saman|samaan|mithai|khareed|parcel/.test(s);
+  const errand = from === "chappanBhog" || to === "chappanBhog" || /saman|samaan|mithai|khareed|parcel|\bbuy\b/.test(s);
   const title = text.replace(/\s+/g, " ").slice(0, 80);
   const wp = (k: PlaceKey) => ({ label: PLACES[k].label, lat: PLACES[k].lat, lng: PLACES[k].lng });
 

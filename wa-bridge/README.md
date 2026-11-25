@@ -1,8 +1,10 @@
 # Shaadi OS WhatsApp bridge
 
-Link your own WhatsApp and send kaam to Shaadi OS from the **"Message yourself"** chat:
+Link your own WhatsApp and send tasks to Shaadi OS from the **"Message yourself"** chat:
 
-> Bua ji ko charbagh se laana hai 3 baje, 3 log
+> Pick up Bua ji from Charbagh at 3pm, 3 people
+
+Hinglish works too ("Bua ji ko charbagh se laana hai 3 baje, 3 log"); replies are in English.
 
 Shaadi OS creates the task, auto-assigns a helper and replies in the same chat.
 

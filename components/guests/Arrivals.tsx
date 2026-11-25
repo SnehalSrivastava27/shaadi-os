@@ -41,20 +41,20 @@ export function Arrivals() {
                 {formatDateTime(a.time)} · {a.place}
               </p>
               <p className="text-muted-foreground flex items-center gap-1 text-xs">
-                <Users className="size-3" /> {people} log
+                <Users className="size-3" /> {people} {people === 1 ? "person" : "people"}
               </p>
             </div>
             {task ? (
               <Link href={`/tasks/${task.id}`} className="flex flex-col items-end gap-1 text-xs">
                 <TaskStatusBadge status={task.status} />
-                <span className="text-muted-foreground underline">task dekho</span>
+                <span className="text-muted-foreground underline">view task</span>
               </Link>
             ) : (
               <Button
                 size="sm"
                 onClick={() =>
                   setDefaults({
-                    title: `${shortName(g.name)} ko ${a.place.split(" ")[0]} ${a.mode === "flight" ? "airport" : "station"} se laana hai`,
+                    title: `Pick up ${shortName(g.name)} from ${a.place.split(" ")[0]} ${a.mode === "flight" ? "airport" : "station"}`,
                     type: "pickup",
                     pickupPlaceId: placeIdFor(a.lat, a.lng, g.id),
                     dropPlaceId: "ghar",

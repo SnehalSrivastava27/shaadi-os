@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 
-export async function copyText(text: string, successMessage = "Copy ho gaya!") {
+export async function copyText(text: string, successMessage = "Copied!") {
   try {
     await navigator.clipboard.writeText(text);
     toast.success(successMessage);
@@ -17,6 +17,6 @@ export async function copyText(text: string, successMessage = "Copy ho gaya!") {
     const ok = document.execCommand("copy");
     ta.remove();
     if (ok) toast.success(successMessage);
-    else toast.error("Copy nahi ho paaya. Text select karke copy karein.");
+    else toast.error("Couldn't copy. Please select the text and copy it.");
   }
 }

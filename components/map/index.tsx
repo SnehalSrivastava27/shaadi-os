@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 function MapLoading() {
   return (
     <div className="bg-muted flex h-full w-full items-center justify-center text-muted-foreground">
-      <Loader2 className="mr-2 size-4 animate-spin" /> Naksha load ho raha hai…
+      <Loader2 className="mr-2 size-4 animate-spin" /> Loading map…
     </div>
   );
 }

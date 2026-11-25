@@ -46,14 +46,14 @@ Shaadi OS compares the quotes (cheapest fare; if fares are within 8%, the faster
    RIDE_BRIDGE_URL=http://127.0.0.1:8787
    RIDE_BRIDGE_TOKEN=<same as BRIDGE_TOKEN>
    ```
-5. Open a task → **Uber / Rapido**. The dialog badge shows **Live · aapka phone**.
+5. Open a task → **Uber / Rapido**. The dialog badge shows **Live · your phone**.
 
 Try it without a phone first: `BRIDGE_MOCK=1` returns sample fares and bookings through the same code path.
 
 ## Safety
 
 - **Dry run by default.** With `BRIDGE_ALLOW_BOOKING=0` the agent is told to stop on the confirm screen and never tap Book.
-- **Two keys for a real ride.** Booking needs `BRIDGE_ALLOW_BOOKING=1` on the bridge **and** the organizer ticking "Haan, asli cab book karo" in the dialog.
+- **Two keys for a real ride.** Booking needs `BRIDGE_ALLOW_BOOKING=1` on the bridge **and** the organizer ticking "Yes, book a real cab" in the dialog.
 - The agent is told not to change the payment method or add tips or extras. Still, **test with a wallet balance of 0 or a test account first**, and watch the phone.
 - The token never reaches the browser; only the Next.js server talks to the bridge. Keep the bridge on `127.0.0.1` unless you add your own TLS.
 - One phone does one thing at a time (a lock), so quotes are fetched one app after another (about 1–2 minutes each).

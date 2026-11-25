@@ -33,9 +33,9 @@ export function HelperView({ helperId }: { helperId: string }) {
   if (!helper) {
     return (
       <div className="p-6">
-        <p className="text-muted-foreground">Ye helper nahi mila.</p>
+        <p className="text-muted-foreground">Couldn’t find this helper.</p>
         <Link href="/settings" className="text-primary underline">
-          Settings mein &quot;Login as&quot; se chuniye
+          Pick one with &quot;Login as&quot; in Settings
         </Link>
       </div>
     );
@@ -51,7 +51,7 @@ export function HelperView({ helperId }: { helperId: string }) {
     <div className="mx-auto grid max-w-2xl gap-4 p-3 md:p-6">
       {!viewingAsSelf && (
         <p className="bg-secondary text-secondary-foreground rounded-lg px-3 py-2 text-xs">
-          Aap organizer ke roop mein {helper.name} ka phone-view dekh rahe hain. Settings → &quot;Login as&quot; se helper ban sakte hain.
+          You’re seeing {helper.name}’s phone view as the organizer. Use Settings → &quot;Login as&quot; to switch to a helper.
         </p>
       )}
       <Card className="mandala-bg gap-3 border-0 text-[#FFF1D6]">
@@ -60,9 +60,9 @@ export function HelperView({ helperId }: { helperId: string }) {
             <AvatarFallback className="bg-accent text-accent-foreground text-base">{initials(helper.name)}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <p className="font-heading text-xl font-bold">Namaste, {helper.name}!</p>
+            <p className="font-heading text-xl font-bold">Hi, {helper.name}!</p>
             <p className="text-xs text-[#F4D58D]">
-              {helper.relation} · {me ? `location ${timeAgo(me.timestamp, now)} update hui` : "location nahi mili"}
+              {helper.relation} · {me ? `location updated ${timeAgo(me.timestamp, now)}` : "no location yet"}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1">
@@ -71,7 +71,7 @@ export function HelperView({ helperId }: { helperId: string }) {
               checked={helper.availability === "online"}
               onCheckedChange={(on) => {
                 setAvailability(helper.id, on ? "online" : "offline");
-                toast(on ? "Aap online hain. Naye tasks aayenge." : "Aap offline hain. Koi task nahi aayega.");
+                toast(on ? "You're online. New tasks will come in." : "You're offline. No tasks will come in.");
               }}
             />
             <Label htmlFor="online" className="text-[11px] text-[#FFF1D6]">
@@ -83,15 +83,15 @@ export function HelperView({ helperId }: { helperId: string }) {
 
       {!helper.locationSharing && (
         <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm">
-          Location sharing band hai, isliye aapko auto-assign se task nahi milenge. <Link href="/settings" className="underline">Settings</Link>
+          Location sharing is off, so auto-assign won’t send you tasks. <Link href="/settings" className="underline">Settings</Link>
         </p>
       )}
 
       <section className="grid gap-3">
         <h2 className="font-heading flex items-center gap-2 text-lg font-semibold">
-          <Bell className="text-primary size-5" /> Naye tasks {offers.length > 0 && <Badge variant="accent">{offers.length}</Badge>}
+          <Bell className="text-primary size-5" /> New tasks {offers.length > 0 && <Badge variant="accent">{offers.length}</Badge>}
         </h2>
-        {offers.length === 0 && <p className="text-muted-foreground text-sm">Abhi koi naya task nahi. Aaram kijiye 🙂</p>}
+        {offers.length === 0 && <p className="text-muted-foreground text-sm">No new tasks right now. Take a break 🙂</p>}
         {offers.map((t) => {
           const v = vehicles.find((x) => x.id === t.assignedVehicleId);
           const g = guests.find((x) => x.id === t.guestId);
@@ -101,7 +101,7 @@ export function HelperView({ helperId }: { helperId: string }) {
               <CardHeader>
                 <CardTitle className="text-lg">{t.title}</CardTitle>
                 <CardDescription>
-                  {formatDateTime(t.time)} {dist !== undefined && `· aapse ${formatKm(dist)} door`}
+                  {formatDateTime(t.time)} {dist !== undefined && `· ${formatKm(dist)} from you`}
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-2 text-sm">
@@ -112,7 +112,7 @@ export function HelperView({ helperId }: { helperId: string }) {
                   <Navigation className="text-accent size-4" /> {t.waypoints[t.waypoints.length - 1].label}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Users className="size-4" /> {t.peopleCount} log {g && `· ${g.name} (${g.phone})`}
+                  <Users className="size-4" /> {t.peopleCount} people {g && `· ${g.name} (${g.phone})`}
                 </p>
                 {v && (
                   <p className="flex items-center gap-2">
@@ -125,8 +125,8 @@ export function HelperView({ helperId }: { helperId: string }) {
                     size="lg"
                     onClick={() => {
                       const r = declineTask(t.id);
-                      toast("Mana kar diya", {
-                        description: r?.ok ? `Ab ${r.helper.name} ko offer gaya` : "Organizer ko bata diya gaya",
+                      toast("Declined", {
+                        description: r?.ok ? `Offer passed to ${r.helper.name}` : "The organizer has been told",
                       });
                     }}
                   >
@@ -136,7 +136,7 @@ export function HelperView({ helperId }: { helperId: string }) {
                     size="lg"
                     onClick={() => {
                       const r = acceptTask(t.id);
-                      if (r.ok) toast.success("Accept kiya! Nikal padiye 🚗");
+                      if (r.ok) toast.success("Accepted! Time to head out 🚗");
                       else toast.error(r.error);
                     }}
                   >
@@ -151,13 +151,13 @@ export function HelperView({ helperId }: { helperId: string }) {
 
       {current && (
         <section className="grid gap-3">
-          <h2 className="font-heading text-lg font-semibold">Abhi chal raha hai</h2>
+          <h2 className="font-heading text-lg font-semibold">In progress</h2>
           <Card className="gap-3">
             <CardHeader className="flex flex-row items-start justify-between">
               <div>
                 <CardTitle>{current.title}</CardTitle>
                 <CardDescription>
-                  {current.sim ? `Ja rahe hain: ${current.sim.route[current.sim.leg + 1]?.label}` : "Accepted"}
+                  {current.sim ? `Heading to: ${current.sim.route[current.sim.leg + 1]?.label}` : "Accepted"}
                 </CardDescription>
               </div>
               <TaskStatusBadge status={current.status} />
@@ -173,10 +173,10 @@ export function HelperView({ helperId }: { helperId: string }) {
                 <Button
                   onClick={() => {
                     const r = completeTask(current.id, helper.name);
-                    if (r.ok) toast.success("Shabaash! Task complete ✅");
+                    if (r.ok) toast.success("Well done! Task complete ✅");
                   }}
                 >
-                  <CheckCircle2 /> Ho gaya
+                  <CheckCircle2 /> Done
                 </Button>
               </div>
             </CardContent>
@@ -186,7 +186,7 @@ export function HelperView({ helperId }: { helperId: string }) {
 
       {done.length > 0 && (
         <section className="grid gap-2">
-          <h2 className="font-heading text-lg font-semibold">Pichle tasks</h2>
+          <h2 className="font-heading text-lg font-semibold">Past tasks</h2>
           {done.map((t) => (
             <Link key={t.id} href={`/tasks/${t.id}`} className="bg-card hover:bg-muted flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
               {t.title}

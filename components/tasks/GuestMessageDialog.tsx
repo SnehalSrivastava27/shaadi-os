@@ -20,12 +20,12 @@ export function GuestMessageDialog() {
           <DialogTitle className="flex items-center gap-2">
             <MessageCircle className="size-5 text-primary" /> Message to guest
           </DialogTitle>
-          <DialogDescription>{task.title}: WhatsApp par bhej dijiye.</DialogDescription>
+          <DialogDescription>{task.title}: send it on WhatsApp.</DialogDescription>
         </DialogHeader>
         <GuestMessageCard task={task} />
         <DialogFooter>
           <Button variant="outline" onClick={() => close(null)}>
-            Theek hai
+            OK
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,5 @@
 // Offline, rule-based "AI" for the invite builder. Used when no LLM key is set
-// or the LLM call fails, so the demo always works. Understands Hinglish:
+// or the LLM call fails, so the demo always works. Understands Hinglish and English:
 // names, dates, cities, themes, function names, colours and "X baje" times.
 
 import type { Theme, WeddingConfig, WeddingFunction } from "@/types";
@@ -53,7 +53,7 @@ export function detectFunctions(text: string): FunctionPreset[] {
 
 export function detectTheme(text: string): Theme | undefined {
   const lower = text.toLowerCase();
-  const order: Theme[] = ["south-indian", "punjabi", "bengali", "rajasthani", "modern"];
+  const order: Theme[] = ["mandap", "south-indian", "punjabi", "bengali", "rajasthani", "modern"];
   return order.find((t) => THEME_PRESETS[t].keywords.some((k) => hasWord(lower, k)));
 }
 
@@ -213,7 +213,7 @@ export function parseWithRules(config: WeddingConfig, message: string, today = n
     return {
       patch,
       summary,
-      reply: `Badhai ho! ${names.bride} aur ${names.groom} ka ${THEME_PRESETS[t].label} invite taiyaar hai: ${keys.length} functions, ${c.name}. Ab kuch bhi badalne ko boliye, jaise "sangeet 8 baje kar do".`,
+      reply: `Congratulations! ${names.bride} & ${names.groom}'s ${THEME_PRESETS[t].label} invite is ready: ${keys.length} functions in ${c.name}. Now ask for any change, like "move sangeet to 8 pm".`,
       suggestions: preview.ok ? functionSuggestions(preview.config) : [],
     };
   }
@@ -240,7 +240,7 @@ export function parseWithRules(config: WeddingConfig, message: string, today = n
   }
 
   if (/hindi/.test(lower)) {
-    const off = /hatao|remove|nahi|mat|band|sirf english|only english/.test(lower);
+    const off = /hatao|remove|hide|nahi|mat|band|sirf english|only english/.test(lower);
     patch.showHindi = !off;
     changes.push(off ? "Hindi hidden" : "Hindi shown");
   } else if (/sirf english|only english/.test(lower)) {
@@ -325,7 +325,7 @@ export function parseWithRules(config: WeddingConfig, message: string, today = n
       patch: {},
       summary: "",
       reply:
-        'Maaf kijiye, ye samajh nahi aaya. Aise boliye: "colour maroon karo", "sangeet 8 baje kar do", "Hindi mein bhi dikhao", "Punjabi theme lagao" ya "Jaago add karo".',
+        'Sorry, I didn\'t understand that. Try: "make the colour maroon", "move sangeet to 8 pm", "show Hindi too", "use the Punjabi theme" or "add Jaago".',
       suggestions: functionSuggestions(config),
     };
   }
@@ -335,7 +335,7 @@ export function parseWithRules(config: WeddingConfig, message: string, today = n
   return {
     patch,
     summary,
-    reply: `Ho gaya! ${summary}.`,
+    reply: `Done! ${summary}.`,
     suggestions: preview.ok ? functionSuggestions(preview.config) : [],
   };
 }

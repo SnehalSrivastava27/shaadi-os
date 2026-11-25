@@ -20,7 +20,7 @@ export function ControlRoom() {
     <div className="flex flex-col gap-4 p-3 md:p-6">
       <div className="flex flex-col gap-1">
         <h1 className="font-heading text-primary text-2xl font-bold md:text-3xl">Control Room</h1>
-        <p className="text-muted-foreground text-sm">Kaun kahan hai, kaunsi gaadi free hai, kiska pickup baaki hai: sab ek jagah.</p>
+        <p className="text-muted-foreground text-sm">Who’s where, which car is free, whose pickup is pending: all in one place.</p>
       </div>
       <div data-tour="summary">
         <SummaryCards />
@@ -36,7 +36,7 @@ export function ControlRoom() {
                 <span className="size-2.5 rounded-full" style={{ background: DISPLAY_COLORS[k] }} /> {DISPLAY_LABEL[k]}
               </span>
             ))}
-            <span>· Person = helper · Car = gaadi · Heart = venue</span>
+            <span>· Person = helper · Car = vehicle · Heart = venue</span>
           </div>
         </div>
         <div className="flex flex-col gap-4 lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-1">

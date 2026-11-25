@@ -16,11 +16,11 @@ import { cn } from "@/lib/utils";
 
 export const rsvpSchema = z
   .object({
-    status: z.enum(["yes", "no"], { error: "Haan ya na chuniye" }),
-    headcount: z.number({ error: "Number daaliye" }).int().min(0).max(20, "20 se zyada nahi"),
+    status: z.enum(["yes", "no"], { error: "Choose yes or no" }),
+    headcount: z.number({ error: "Enter a number" }).int().min(0).max(20, "20 at most"),
     food: z.enum(["veg", "jain", "non-veg"]),
   })
-  .refine((v) => v.status === "no" || v.headcount >= 1, { message: "Kam se kam 1 vyakti", path: ["headcount"] });
+  .refine((v) => v.status === "no" || v.headcount >= 1, { message: "At least 1 guest", path: ["headcount"] });
 
 type RsvpValues = z.infer<typeof rsvpSchema>;
 
@@ -69,7 +69,7 @@ export function RsvpForm({ guest, fn, lang, color }: { guest: Guest; fn: Wedding
         {L.rsvp}
         {saved && (
           <span className="ml-2 inline-flex items-center gap-1 normal-case text-green-700">
-            <CheckCircle2 className="size-3" /> {existing?.status === "yes" ? `${existing.headcount} log` : existing?.status === "no" ? "—" : ""}
+            <CheckCircle2 className="size-3" /> {existing?.status === "yes" ? `${existing.headcount} ${lang === "hi" ? "लोग" : existing.headcount === 1 ? "guest" : "guests"}` : existing?.status === "no" ? "—" : ""}
           </span>
         )}
       </p>

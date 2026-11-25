@@ -82,7 +82,7 @@ export function TaskTable() {
         ),
         cell: ({ getValue }) => <span className="whitespace-nowrap">{formatDateTime(getValue<string>())}</span>,
       },
-      { accessorKey: "peopleCount", header: "Log", cell: ({ getValue }) => getValue<number>() },
+      { accessorKey: "peopleCount", header: "People", cell: ({ getValue }) => getValue<number>() },
       {
         id: "assigned",
         header: "Assigned",
@@ -102,7 +102,7 @@ export function TaskTable() {
             );
           const h = helpers.find((x) => x.id === t.assignedHelperId);
           const v = vehicles.find((x) => x.id === t.assignedVehicleId);
-          if (!h) return <span className="text-muted-foreground text-xs">Abhi koi nahi</span>;
+          if (!h) return <span className="text-muted-foreground text-xs">Nobody yet</span>;
           return (
             <span className="text-xs">
               {h.name}
@@ -140,7 +140,7 @@ export function TaskTable() {
                   variant="accent"
                   onClick={() => {
                     const r = dispatchTask(t.id);
-                    if (r?.ok) toast.success(`${r.helper.name} ko offer bheja`);
+                    if (r?.ok) toast.success(`Offer sent to ${r.helper.name}`);
                   }}
                 >
                   <Wand2 /> Assign
@@ -152,7 +152,7 @@ export function TaskTable() {
                   variant="outline"
                   onClick={() => {
                     const r = completeTask(t.id);
-                    if (r.ok) toast.success("Mark done ✅", { description: t.title });
+                    if (r.ok) toast.success("Marked done ✅", { description: t.title });
                     else toast.error(r.error);
                   }}
                 >
@@ -167,7 +167,7 @@ export function TaskTable() {
                   title="Cancel"
                   onClick={() => {
                     const r = cancelTask(t.id);
-                    if (r.ok) toast("Task cancel kiya", { description: t.title });
+                    if (r.ok) toast("Task canceled", { description: t.title });
                   }}
                 >
                   <XCircle className="text-muted-foreground" />
@@ -235,7 +235,7 @@ export function TaskTable() {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
-                  Is tab mein koi task nahi.
+                  No tasks in this tab.
                 </TableCell>
               </TableRow>
             )}

@@ -9,8 +9,8 @@ const sans = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "600", "700
 const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["500"], style: ["italic"], variable: "--font-cormorant" });
 
 export const metadata: Metadata = {
-  title: "Shaadi OS: Pehle Piyush Sir ki shaadi",
-  description: "Shaadi OS ka pehla asli test Piyush Sir ki shaadi mein. Uske baad aapki baari.",
+  title: "Shaadi OS: Piyush Sir's wedding comes first",
+  description: "Shaadi OS gets its first real test at Piyush Sir's wedding. After that, it's your turn.",
 };
 
 export default function EarlyAccessPage() {
@@ -35,7 +35,7 @@ export default function EarlyAccessPage() {
       </div>
 
       <p className="so-rise mt-8 inline-flex items-center gap-2 rounded-full border border-[#ececec] bg-white px-3 py-1 text-xs font-medium text-[#5f5f5f] shadow-sm" style={{ animationDelay: "0.08s" }}>
-        <span className="size-1.5 rounded-full bg-[#c9a227]" /> Early access · Founding shaadi
+        <span className="size-1.5 rounded-full bg-[#c9a227]" /> Early access · Founding wedding
       </p>
 
       <h1 className="so-rise mt-6 max-w-2xl text-[38px] leading-[1.05] font-semibold tracking-[-0.04em] text-balance sm:text-6xl" style={{ animationDelay: "0.16s" }}>
@@ -43,7 +43,7 @@ export default function EarlyAccessPage() {
       </h1>
 
       <p className="so-rise mx-auto mt-5 max-w-md text-[15px] leading-relaxed text-[#5f5f5f]" style={{ animationDelay: "0.24s" }}>
-        Har pickup, har mehmaan aur har thaali ka asli test wahin hoga. Pass hua, to agla muhurat aapka.
+        Every pickup, every guest and every plate gets its real test there. If it passes, the next muhurat is yours.
       </p>
 
       <Link

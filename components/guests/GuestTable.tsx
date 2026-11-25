@@ -34,10 +34,10 @@ function rsvpSummary(g: Guest): RsvpSummary {
 }
 
 const RSVP_BADGE: Record<RsvpSummary, { label: string; variant: "free" | "unavailable" | "busy" | "secondary" }> = {
-  yes: { label: "Aa rahe hain", variant: "free" },
-  no: { label: "Nahi aa paayenge", variant: "unavailable" },
-  pending: { label: "Jawab baaki", variant: "busy" },
-  mixed: { label: "Kuch functions", variant: "secondary" },
+  yes: { label: "Attending", variant: "free" },
+  no: { label: "Not attending", variant: "unavailable" },
+  pending: { label: "Awaiting reply", variant: "busy" },
+  mixed: { label: "Some functions", variant: "secondary" },
 };
 
 export function GuestTable() {
@@ -55,7 +55,7 @@ export function GuestTable() {
         accessorKey: "name",
         header: ({ column }) => (
           <Button variant="ghost" size="sm" className="-ml-3" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Naam <ArrowUpDown />
+            Name <ArrowUpDown />
           </Button>
         ),
         cell: ({ row }) => (
@@ -69,7 +69,7 @@ export function GuestTable() {
         accessorKey: "side",
         header: "Side",
         filterFn: "equals",
-        cell: ({ getValue }) => <Badge variant={getValue() === "bride" ? "default" : "accent"}>{getValue() === "bride" ? "Ladki wale" : "Ladke wale"}</Badge>,
+        cell: ({ getValue }) => <Badge variant={getValue() === "bride" ? "default" : "accent"}>{getValue() === "bride" ? "Bride's side" : "Groom's side"}</Badge>,
       },
       {
         id: "functions",
@@ -100,12 +100,12 @@ export function GuestTable() {
       },
       {
         id: "headcount",
-        header: "Log",
+        header: "Guests",
         accessorFn: (g) => Math.max(0, ...g.rsvps.map((r) => (r.status === "yes" ? r.headcount : 0))),
       },
       {
         id: "food",
-        header: "Khana",
+        header: "Meal",
         accessorFn: (g) => g.rsvps[0]?.food ?? "veg",
         cell: ({ getValue }) => {
           const f = getValue<string>();
@@ -132,7 +132,7 @@ export function GuestTable() {
         header: "",
         cell: ({ row }) => (
           <div className="flex justify-end gap-1">
-            <Button size="sm" variant="outline" onClick={() => copyText(inviteUrl(row.original.id), `${row.original.name} ka invite link copy hua`)}>
+            <Button size="sm" variant="outline" onClick={() => copyText(inviteUrl(row.original.id), `Copied invite link for ${row.original.name}`)}>
               <Link2 /> Copy invite link
             </Button>
             <Button size="icon" variant="ghost" asChild aria-label="Open invite">
@@ -168,7 +168,7 @@ export function GuestTable() {
       <div className="flex flex-col gap-2 md:flex-row">
         <div className="relative md:w-72">
           <Search className="text-muted-foreground absolute top-2.5 left-2.5 size-4" />
-          <Input placeholder="Naam, phone ya function…" className="pl-8" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Input placeholder="Name, phone or function…" className="pl-8" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-2 md:flex">
           <Select defaultValue="all" onValueChange={(v) => setFilter("side", v)}>
@@ -176,9 +176,9 @@ export function GuestTable() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Dono side</SelectItem>
-              <SelectItem value="bride">Ladki wale</SelectItem>
-              <SelectItem value="groom">Ladke wale</SelectItem>
+              <SelectItem value="all">Both sides</SelectItem>
+              <SelectItem value="bride">Bride&apos;s side</SelectItem>
+              <SelectItem value="groom">Groom&apos;s side</SelectItem>
             </SelectContent>
           </Select>
           <Select defaultValue="all" onValueChange={(v) => setFilter("rsvp", v)}>
@@ -186,11 +186,11 @@ export function GuestTable() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Saare RSVP</SelectItem>
-              <SelectItem value="yes">Aa rahe hain</SelectItem>
-              <SelectItem value="pending">Jawab baaki</SelectItem>
-              <SelectItem value="no">Nahi aa paayenge</SelectItem>
-              <SelectItem value="mixed">Kuch functions</SelectItem>
+              <SelectItem value="all">All RSVPs</SelectItem>
+              <SelectItem value="yes">Attending</SelectItem>
+              <SelectItem value="pending">Awaiting reply</SelectItem>
+              <SelectItem value="no">Not attending</SelectItem>
+              <SelectItem value="mixed">Some functions</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -221,7 +221,7 @@ export function GuestTable() {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
-                  Koi guest nahi mila.
+                  No guests found.
                 </TableCell>
               </TableRow>
             )}
