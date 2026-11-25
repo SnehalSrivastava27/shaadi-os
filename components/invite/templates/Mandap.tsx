@@ -11,6 +11,8 @@ import { googleMapsLink } from "@/lib/geo";
 import { formatInviteDate, formatInviteTime } from "@/lib/invite/i18n";
 import { Editable, EditablePicker, useEdit } from "../Editable";
 import { Story } from "../Story";
+import { STACKED_SCENE } from "../scene";
+import Lenis from "lenis";
 import { Greeting, LABELS, functionDisplayName, type TemplateProps } from "./shared";
 
 const display = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600"], style: ["normal", "italic"] });
@@ -234,10 +236,8 @@ function MonthCalendar({ date, color, accent }: { date: string; color: string; a
 /** One screen of the invite. Live: fills the viewport and snaps. Builder: normal flow so editing stays easy. */
 function Scene({ live, className = "", children }: { live: boolean; className?: string; children: React.ReactNode }) {
   return (
-    <section
-      data-scene
-      className={`relative mx-auto w-full max-w-md text-center ${live ? "flex min-h-[100svh] snap-start snap-always flex-col items-center justify-center overflow-hidden px-7 py-14" : "px-8 py-10"} ${className}`}
-    >
+    <section data-scene className={`${live ? STACKED_SCENE : "relative mx-auto w-full max-w-md px-8 py-10 text-center"} ${className}`}>
+      {live && <div data-dim aria-hidden className="pointer-events-none absolute inset-0 z-30 bg-[#2a1d08] opacity-0" />}
       {children}
     </section>
   );
@@ -314,15 +314,29 @@ export function MandapTemplate({ config, functions, lang, guestName, renderFunct
     color: "#3b2a12",
   };
 
-  // One screen at a time on the real invite: snap the page, and lock scrolling until the gate is opened.
+  // Real invite: lock scrolling until the gate opens, then smooth (Lenis) scrolling synced to ScrollTrigger.
   useEffect(() => {
     if (!live) return;
     const html = document.documentElement;
-    html.style.scrollSnapType = "y mandatory";
     html.style.overflow = opened ? "" : "hidden";
+    // A scene taller than the screen sticks only once its bottom is reached, so nothing is ever cut off.
+    const pinTall = () =>
+      root.current?.querySelectorAll<HTMLElement>("[data-scene]").forEach((el) => (el.style.top = `${Math.min(0, window.innerHeight - el.offsetHeight)}px`));
+    pinTall();
+    window.addEventListener("resize", pinTall);
+    let lenis: Lenis | null = null;
+    const raf = (t: number) => lenis?.raf(t * 1000);
+    if (opened && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      lenis = new Lenis({ lerp: 0.09 });
+      lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add(raf);
+      gsap.ticker.lagSmoothing(0);
+    }
     return () => {
-      html.style.scrollSnapType = "";
       html.style.overflow = "";
+      window.removeEventListener("resize", pinTall);
+      gsap.ticker.remove(raf);
+      lenis?.destroy();
     };
   }, [live, opened]);
 
@@ -333,6 +347,18 @@ export function MandapTemplate({ config, functions, lang, guestName, renderFunct
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.to("[data-bell]", { rotation: 7, transformOrigin: "50% 0%", duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1, stagger: 0.5 });
+        // Card stack: while the next scene slides up, the current one sinks back and dims.
+        const scenes = gsap.utils.toArray<HTMLElement>("[data-scene]");
+        scenes.forEach((scene, i) => {
+          const next = scenes[i + 1];
+          if (!next) return;
+          const st = { trigger: next, start: "top bottom", end: "top top", scrub: true } as const;
+          gsap.to(scene, { scale: 0.9, yPercent: -4, borderRadius: 32, ease: "none", scrollTrigger: st });
+          const dim = scene.querySelector("[data-dim]");
+          if (dim) gsap.to(dim, { opacity: 0.45, ease: "none", scrollTrigger: st });
+        });
+        // The marigold thread draws itself as the guest travels through the invite.
+        gsap.fromTo("[data-thread] path", { drawSVG: "0%" }, { drawSVG: "100%", ease: "none", scrollTrigger: { trigger: root.current, start: "top top", end: "bottom bottom", scrub: 0.6 } });
         gsap.utils.toArray<HTMLElement>("[data-scene]").slice(1).forEach((scene) => {
           const st = { trigger: scene, start: "top 65%", toggleActions: "play none none reverse" } as const;
           gsap.from(scene.querySelectorAll("[data-anim]"), { y: 46, opacity: 0, duration: 0.9, ease: "power3.out", stagger: 0.11, scrollTrigger: st });
@@ -381,7 +407,12 @@ export function MandapTemplate({ config, functions, lang, guestName, renderFunct
   };
 
   return (
-    <div ref={root} style={paper} className={`${display.className} relative min-h-full overflow-hidden`}>
+    <div ref={root} style={{ ...paper, ["--paper" as string]: paper.background }} className={`${display.className} relative min-h-full overflow-x-clip`}>
+      {live && (
+        <svg data-thread aria-hidden viewBox="0 0 24 1000" preserveAspectRatio="none" className="pointer-events-none fixed top-0 left-[max(6px,calc(50%-224px+6px))] z-40 h-[100svh] w-6">
+          <path d="M12 0 C2 120 22 240 12 360 S2 600 12 720 S22 900 12 1000" fill="none" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+        </svg>
+      )}
       {/* Gate: only on the real invite, never while editing */}
       {live && !opened && (
         <div ref={gate} className="fixed inset-0 z-50 flex items-center justify-center bg-[#2a1d08]/40 p-6 backdrop-blur-sm">
@@ -427,7 +458,8 @@ export function MandapTemplate({ config, functions, lang, guestName, renderFunct
       )}
 
       {/* Hero: Ganesha blesses the invite and showers flowers */}
-      <section data-scene data-hero className={`relative mx-auto max-w-md overflow-hidden px-8 text-center ${live ? "flex h-[100svh] min-h-[600px] snap-start snap-always flex-col items-center pt-[64px]" : "min-h-[700px] pt-[64px] pb-56"}`}>
+      <section data-scene data-hero className={`relative mx-auto max-w-md overflow-hidden px-8 text-center ${live ? "sticky top-0 flex h-[100svh] min-h-[600px] flex-col items-center pt-[64px] will-change-transform [background:var(--paper)]" : "min-h-[700px] pt-[64px] pb-56"}`}>
+        {live && <div data-dim aria-hidden className="pointer-events-none absolute inset-0 z-40 bg-[#2a1d08] opacity-0" />}
         <Toran />
         <div data-bell className="pointer-events-none absolute top-10 left-3 z-10">
           <Bell className="h-36 w-8" len={90} />

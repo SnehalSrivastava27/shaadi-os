@@ -8,6 +8,7 @@ import { DEFAULT_STORY, compressPhoto, nextScene } from "@/lib/invite/story";
 import { useStoryPhotos } from "@/stores/useStoryPhotos";
 import { Editable, useEdit } from "./Editable";
 import { StoryIllustration } from "./StoryScenes";
+import { STACKED_SCENE } from "./scene";
 
 // Native CSS scroll-driven reveal; browsers without it (or reduced motion) just show the content.
 const reveal = "motion-safe:[animation:so-rise_linear_both] motion-safe:[animation-timeline:view()] motion-safe:[animation-range:entry_5%_cover_30%]";
@@ -94,7 +95,8 @@ export function Story({
     return (
       <>
         {story.map((c, i) => (
-          <section key={c.id} data-scene className="relative mx-auto flex min-h-[100svh] w-full max-w-md snap-start snap-always flex-col items-center justify-center overflow-hidden px-7 py-14 text-center">
+          <section key={c.id} data-scene className={STACKED_SCENE}>
+            <div data-dim aria-hidden className="pointer-events-none absolute inset-0 z-30 bg-[#2a1d08] opacity-0" />
             <span data-parallax aria-hidden className={`${titleClass} pointer-events-none absolute top-[8%] right-2 text-[150px] leading-none font-semibold opacity-[0.07]`} style={{ color: primary }}>
               {String(i + 1).padStart(2, "0")}
             </span>
