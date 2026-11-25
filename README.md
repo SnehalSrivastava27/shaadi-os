@@ -1,8 +1,68 @@
 # Shaadi OS 🪔
 
-**A wedding command center for Indian families.** Track pickups and helpers on a live map, auto-assign the nearest cousin and car, fall back to Uber or Rapido when everyone is busy, manage RSVPs and catering counts, and build the invite website by chatting in Hinglish.
+**The wedding WhatsApp group, but it actually gets things done.** Families post kaam in their group, by text or voice note, in Hinglish or any Indian language. Shaadi OS turns each request into a task, the first cousin to reply `take 7` gets it, and everyone shows up on one live map. Uber or Rapido steps in when nobody is free, and the invite website and RSVPs live in the same place.
+
+- **Language:** voice notes, any place name and replies in the sender's own language all run on **[Sarvam AI](https://www.sarvam.ai)**. See [SARVAM.md](SARVAM.md).
+- **Control:** every risky feature has a live on/off switch, and the landing headline is A/B tested, with **[Flagsmith](https://flagsmith.com)**. See [FLAGSMITH.md](FLAGSMITH.md).
+- **Reliability:** wedding-day incidents, including *"pickup unclaimed, Bua ji waiting at Charbagh"*, go to **[NudgeBee](https://nudgebee.com)**, whose AI agents investigate and whose approval-gated runbooks fix them. See [NUDGEBEE.md](NUDGEBEE.md).
+- **Business:** pricing per wedding, unit economics and go-to-market for an indie founder. See [BUSINESS_PLAN.md](BUSINESS_PLAN.md).
 
 Demo wedding: **Riya weds Arjun, Lucknow, 10–12 Dec**, with 6 helpers, 4 vehicles, 25 guests and 3 sample tasks.
+
+---
+
+## Problem statement
+
+**An Indian wedding is a three-day logistics operation run out of a WhatsApp group, and things fall through the cracks.**
+
+Fifty relatives arrive over three days, by train, flight and car, at different stations and times. Someone has to pick up each of them, fetch the sweets, drop Nani home after the sangeet, and do it all while the family is also *in* the wedding. Today that work is coordinated in a family WhatsApp group of 80 people, through forwards, voice notes and "kaun jaa raha hai?".
+
+What goes wrong:
+
+1. **Requests get lost in the chat.** "Bua ji ko Charbagh se laana hai 3 baje" scrolls away under 40 good-morning messages. Nobody knows whether someone took it, so either three cousins go or none do.
+2. **Nobody knows where anyone is.** The organizer calls each cousin in turn: "kahan pahunche?" There is no picture of who is free, who is nearby, or which car is out.
+3. **Elders speak, they don't type.** Nani sends a 20-second Hindi voice note, Mama ji writes in Devanagari, Bua ji mixes Hinglish and Bhojpuri. No form, app or bot understands them, so a younger cousin translates by hand.
+4. **Places are local, not addresses.** "Station", "Hazratganj wale mandir ke paas", "sabzi mandi": real requests name landmarks, not pins.
+5. **One miss becomes a family drama.** A guest left waiting at the station for an hour isn't a logistics bug, it's *fufa ki narazgi* for the next ten years. And it's always noticed too late.
+
+### What we saw building it (real data from this app)
+
+- **A rule-based bot understood almost nothing.** Our first parser knew 5 Lucknow places. *"Sabzi laani h"*, a real message from our test group, got no reply at all, because it names no place.
+- **Script breaks bots.** *"मामा जी को अमौसी एयरपोर्ट से लाना है कल सुबह 10 बजे"* fell straight through the Latin-text parser. With Sarvam it became **Lucknow Airport → Home, tomorrow 10:00**, with the reply in Hindi.
+- **Landmarks need a map, not a list.** *"Mausi ko Hazratganj se laana hai 6 baje, 2 log"* now resolves to real coordinates (26.848, 80.943), at 18:00, for 2 people. *"Sabzi laani h"* becomes an errand from **Aminabad** to home.
+- **The WhatsApp layer is fragile.** During the build, group messages were silently dropped after a reconnect and the group lookup hung. Those are exactly the failures nobody notices until a guest is stranded, which is why NudgeBee watches them.
+- **Features need a kill switch.** We flipped a Flagsmith flag on the running app and it took effect in **5 seconds**, with no redeploy.
+
+### What Shaadi OS does about it
+
+Shaadi OS sits **inside the family WhatsApp group**. Anyone posts a request in any language, by text or voice note. Sarvam works out who, from where, to where and when, and the map finds the place. The bot posts it as **Kaam #7**, and the first person to reply `take 7` gets it and is @tagged, along with whoever asked. Helpers share their live location, so the organizer sees everyone on one map. If nobody claims a pickup 15 minutes before its time, NudgeBee raises an incident and an approved runbook reassigns it. Flagsmith keeps every risky feature one click from off.
+
+### Target audience
+
+**Middle-class and upper-middle-class Indian families running a 100–500 guest wedding themselves, starting in Hindi-belt cities (Lucknow first).**
+
+- **Why this group:** these weddings are big enough that logistics break (multiple functions, outstation guests, 5–10 helpers), but there's no wedding planner running operations. A cousin does it, from WhatsApp.
+- **The gap:** wedding apps today are planner-facing SaaS, vendor marketplaces or invite makers. Nobody works *where the family already is*, in the WhatsApp group, in the family's own language.
+- **What they get:** a WhatsApp bot that turns messages into claimable tasks, a live map of every helper, Uber/Rapido backup and an invite website in 22 languages, for **₹4,999 per wedding** (free for small functions). See [BUSINESS_PLAN.md](BUSINESS_PLAN.md).
+
+**Who uses it day to day:** the "responsible cousin" (24–35) who coordinates, the helpers who claim tasks, and the elders who just send a voice note and get picked up.
+
+---
+
+## Features
+
+| | |
+|---|---|
+| **WhatsApp group tasks** | Anyone posts a request and the bot replies with **Kaam #N**. The first `take N` gets it (@tagged with the asker), then `done N` or `list`. Tasks from your own chat and the dashboard go to the group too. |
+| **Any language, any place** | Sarvam reads Hinglish, Devanagari and 22 Indian languages. Any landmark is looked up on OpenStreetMap; shopping errands with no shop get a real local market. |
+| **Voice notes** | A WhatsApp voice note is transcribed and translated by Sarvam, then becomes a task. Voice-note senders get a reply in their own language, as text and audio. |
+| **Live location** | Helpers share live location in the group, and everyone appears on one map at once. Real GPS is never overridden by the simulator. |
+| **Control room** | Live map, auto-assign of the nearest free helper and car, decline → next helper, trip replay. |
+| **Uber / Rapido backup** | When everyone is busy: compare fares and book through a phone bridge, or fall back to demo rates. |
+| **Invite website** | Build it by chatting in Hinglish. Six cultural templates, RSVPs and catering counts, and **22 languages** for guests in one tap. |
+| **Feature flags** | Six Flagsmith switches (group mode, voice notes, native replies, AI understanding, invite translation, real rides) that take effect in about 5 seconds, plus a landing-headline A/B test. |
+| **Wedding-day SRE** | NudgeBee incidents for WhatsApp down, Sarvam or Flagsmith errors, and **pickups unclaimed 15 minutes before their time**. Approval-gated runbooks: auto-assign, repost to the group, restart the bridge. |
+| **Zero setup** | `npm run dev` starts the WhatsApp bridge itself; scan the QR code in Settings. With no keys, it falls back to offline parsing and the defaults. |
 
 ---
 
@@ -201,6 +261,16 @@ The AI **never writes React or HTML**. One `WeddingConfig` object drives the who
 All reads go through `lib/data` (queries such as `latestPosition`, `cateringSummary`, `getSavedPlaces`) and the store's actions. To use a real backend, implement `DataAdapter` in `lib/data/index.ts` and replace the `persist` storage in `stores/useShaadiStore.ts` (or call Supabase inside the actions). The components do not change.
 
 ---
+
+## Honest limitations
+
+- **WhatsApp is unofficial.** The bridge uses Baileys (WhatsApp Web), so a number can be banned. Use a spare number; paid plans move to the official WhatsApp Business API (see [BUSINESS_PLAN.md](BUSINESS_PLAN.md)).
+- **A dashboard tab does the work.** Group messages are processed while a Shaadi OS dashboard tab is open. Data lives in that browser (`localStorage`), not a shared database yet.
+- **Voice notes up to 30 s.** That's Sarvam's sync speech-to-text limit; longer notes would need the batch API.
+- **Live location update rate is unverified.** One-time pins and the first live share are tracked; how often WhatsApp sends live updates to a linked device hasn't been measured on a phone yet.
+- **The map is only as good as OpenStreetMap.** Very local landmarks ("Sharma ji ke ghar ke paas") may not resolve, so the bot asks for the area instead of guessing.
+- **NudgeBee needs your instance.** Event payloads are tested against NudgeBee's documented validation rules; the end-to-end run needs an Event Webhook URL from your NudgeBee account.
+- **Not deployable to Vercel as one piece.** The web app is; the WhatsApp bridge needs an always-on host with a disk (Railway, Render, Fly.io or a VPS).
 
 ## Credits & inspiration
 
