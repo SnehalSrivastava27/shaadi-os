@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bot, Loader2, Send, Sparkles, Trash2, User } from "lucide-react";
+import { ArrowUp, Loader2, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Em, chip, darkPill, hatch } from "@/components/website/ui";
 import { useShaadiStore } from "@/stores/useShaadiStore";
 import type { InviteApiResponse } from "@/lib/invite/schema";
 import { EDIT_EXAMPLES, QUICK_STARTS, functionSuggestions } from "@/lib/invite/suggestions";
@@ -50,8 +50,8 @@ export function ChatPanel() {
       const data = (await res.json()) as InviteApiResponse & { error?: string };
       if (!res.ok) throw new Error(data.error ?? "Server error");
       if (data.error) {
-        addChat({ role: "assistant", text: `Ye badlaav theek se nahi baitha (${data.error}). Pichla version hi rakha hai. Thoda alag tarike se boliye?`, error: true, source: data.source });
-        toast.error("Badlaav apply nahi hua", { description: data.error });
+        addChat({ role: "assistant", text: `That change didn't fit (${data.error}). I kept the previous version. Could you phrase it differently?`, error: true, source: data.source });
+        toast.error("Change not applied", { description: data.error });
         return;
       }
       if (!data.patch || Object.keys(data.patch).length === 0) {
@@ -60,15 +60,15 @@ export function ChatPanel() {
       }
       const merged = applyConfigPatch(data.patch, data.summary);
       if (!merged.ok) {
-        addChat({ role: "assistant", text: `Ye badlaav theek se nahi baitha (${merged.error}). Pichla version hi rakha hai.`, error: true, source: data.source });
-        toast.error("Validation fail hua, purana version rakha", { description: merged.error });
+        addChat({ role: "assistant", text: `That change didn't fit (${merged.error}). I kept the previous version.`, error: true, source: data.source });
+        toast.error("Validation failed, kept the previous version", { description: merged.error });
         return;
       }
       addChat({ role: "assistant", text: data.reply, source: data.source, suggestions: data.suggestions });
-      toast.success(data.summary || "Invite update ho gaya");
+      toast.success(data.summary || "Invite updated");
     } catch (e) {
-      addChat({ role: "assistant", text: "Server se baat nahi ho paayi. Internet check karke dobara try kijiye.", error: true });
-      toast.error(e instanceof Error ? e.message : "Request fail");
+      addChat({ role: "assistant", text: "Couldn't reach the server. Check your connection and try again.", error: true });
+      toast.error(e instanceof Error ? e.message : "Request failed");
     } finally {
       setLoading(false);
     }
@@ -76,20 +76,23 @@ export function ChatPanel() {
 
   const lastSuggestions = [...chat].reverse().find((m) => m.role === "assistant" && m.suggestions?.length)?.suggestions;
   const suggestions = (lastSuggestions ?? functionSuggestions(config)).filter((s) => {
-    const name = s.replace(/ add karo$/, "").toLowerCase();
+    const name = s.replace(/^Add /, "").toLowerCase();
     return !config.functions.some((f) => f.name.toLowerCase() === name);
   });
 
   return (
-    <div className="bg-card flex h-full min-h-0 flex-col rounded-xl border">
-      <div className="flex items-center justify-between border-b px-4 py-2">
-        <p className="font-heading flex items-center gap-2 font-semibold">
-          <Sparkles className="text-accent size-4" /> Invite builder
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_12px_30px_-24px_rgba(0,0,0,0.3)]">
+      <div className="flex items-center justify-between border-b border-[#ececec] px-4 py-3">
+        <p className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em]">
+          <span className="flex size-7 items-center justify-center rounded-lg bg-[#7a1f2b]/10 text-[#7a1f2b]">
+            <Sparkles className="size-3.5" />
+          </span>
+          Invite <Em>builder</Em>
         </p>
         <div className="flex items-center gap-1">
-          {mode && <Badge variant="outline" className="text-[10px]">{mode}</Badge>}
+          {mode && <span className="rounded-full bg-[#f4f4f4] px-2 py-0.5 text-[10px] font-medium text-[#6b6b6b]">{mode}</span>}
           {chat.length > 0 && (
-            <Button size="icon" variant="ghost" aria-label="Clear chat" onClick={clearChat}>
+            <Button size="icon" variant="ghost" aria-label="Clear chat" onClick={clearChat} className="size-8 text-[#8a8a8a]">
               <Trash2 className="size-4" />
             </Button>
           )}
@@ -97,23 +100,29 @@ export function ChatPanel() {
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {chat.length === 0 && (
-          <div className="text-muted-foreground grid gap-2 text-sm">
-            <p>Namaste! 🙏 Apni shaadi ke baare mein batayiye, main invite website bana dunga. Jaise:</p>
-            <p className="bg-muted rounded-lg p-3 italic">&quot;Riya aur Arjun ki shaadi, 12 Dec, Jaipur. Rajasthani theme. Haldi, mehendi, sangeet aur pheras.&quot;</p>
-            <p>Phir badlaav boliye: &quot;colour maroon karo&quot;, &quot;sangeet 8 baje kar do&quot;, &quot;Hindi mein bhi dikhao&quot;.</p>
+          <div className="grid gap-3 text-sm text-[#5f5f5f]">
+            <p>Namaste! 🙏 Tell me about your wedding and I&apos;ll build the invite website. For example:</p>
+            <blockquote className={cn("rounded-xl border border-[#ececec] px-4 py-3 text-[17px] leading-snug text-[#161616]", hatch)}>
+              <Em>&ldquo;Riya and Arjun&apos;s wedding, 12 Dec, Jaipur. Rajasthani theme. Haldi, mehendi, sangeet and pheras.&rdquo;</Em>
+            </blockquote>
+            <p>Then ask for changes: &quot;make the colour maroon&quot;, &quot;move sangeet to 8 pm&quot;, &quot;show Hindi too&quot;.</p>
           </div>
         )}
         <div className="grid gap-3">
           {chat.map((m) => (
-            <div key={m.id} className={cn("flex gap-2", m.role === "user" && "flex-row-reverse")}>
-              <div className={cn("flex size-7 shrink-0 items-center justify-center rounded-full", m.role === "user" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground")}>
-                {m.role === "user" ? <User className="size-4" /> : <Bot className="size-4" />}
-              </div>
+            <div key={m.id} className={cn("flex items-end gap-2", m.role === "user" && "flex-row-reverse")}>
+              {m.role === "assistant" && (
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#7a1f2b]/10 text-[#7a1f2b]">
+                  <Sparkles className="size-3" />
+                </span>
+              )}
               <div
                 className={cn(
-                  "max-w-[85%] rounded-2xl px-3 py-2 text-sm",
-                  m.role === "user" ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-muted rounded-tl-sm",
-                  m.error && "border border-red-300 bg-red-50 text-red-900"
+                  "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
+                  m.role === "user"
+                    ? "rounded-br-md bg-[#262626] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_16px_-12px_rgba(0,0,0,0.6)]"
+                    : "rounded-bl-md border border-[#ececec] bg-[#f7f7f7] text-[#161616]",
+                  m.error && "border-red-200 bg-red-50 text-red-900"
                 )}
               >
                 {m.text}
@@ -121,20 +130,20 @@ export function ChatPanel() {
             </div>
           ))}
           {loading && (
-            <div className="text-muted-foreground flex items-center gap-2 text-sm">
-              <Loader2 className="size-4 animate-spin" /> Invite bana rahe hain…
+            <div className="flex items-center gap-2 text-sm text-[#8a8a8a]">
+              <Loader2 className="size-4 animate-spin" /> Building your invite…
             </div>
           )}
           <div ref={endRef} />
         </div>
       </div>
-      <div className="grid gap-2 border-t p-3">
+      <div className="grid gap-2.5 border-t border-[#ececec] bg-[#fcfcfc] p-3">
         {suggestions.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            <span className="text-muted-foreground self-center text-[11px]">Rasm suggestions:</span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] font-semibold tracking-wider text-[#8a8a8a] uppercase">Rituals</span>
             {suggestions.map((s) => (
-              <button key={s} onClick={() => send(s)} disabled={loading} className="bg-accent/15 hover:bg-accent/30 rounded-full border border-accent/50 px-2.5 py-0.5 text-xs">
-                + {s.replace(/ add karo$/, "")}
+              <button key={s} onClick={() => send(s)} disabled={loading} className="rounded-full border border-[#7a1f2b]/20 bg-[#7a1f2b]/5 px-2.5 py-0.5 text-xs font-medium text-[#7a1f2b] transition hover:bg-[#7a1f2b]/10 disabled:opacity-50">
+                + {s.replace(/^Add /, "")}
               </button>
             ))}
           </div>
@@ -144,13 +153,13 @@ export function ChatPanel() {
             e.preventDefault();
             send(input);
           }}
-          className="flex items-end gap-2"
+          className="flex items-end gap-2 rounded-2xl border border-[#e5e5e5] bg-white p-1.5 shadow-[0_8px_20px_-16px_rgba(0,0,0,0.4)] focus-within:border-[#c9c9c9]"
         >
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Kya banana ya badalna hai? e.g. sangeet 8 baje kar do"
-            className="max-h-32 min-h-10 resize-none"
+            placeholder="What should I build or change? e.g. move sangeet to 8 pm"
+            className="max-h-32 min-h-9 resize-none border-0 bg-transparent px-2 py-1.5 shadow-none focus-visible:ring-0"
             rows={1}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -159,18 +168,18 @@ export function ChatPanel() {
               }
             }}
           />
-          <Button type="submit" size="icon" disabled={loading || !input.trim()} aria-label="Send">
-            {loading ? <Loader2 className="animate-spin" /> : <Send />}
-          </Button>
+          <button type="submit" disabled={loading || !input.trim()} aria-label="Send" className={cn(darkPill, "size-9 shrink-0 justify-center px-0")}>
+            {loading ? <Loader2 className="animate-spin" /> : <ArrowUp />}
+          </button>
         </form>
         <div className="flex flex-wrap gap-1.5">
           {QUICK_STARTS.map((q) => (
-            <button key={q.label} onClick={() => send(q.prompt)} disabled={loading} className="bg-secondary text-secondary-foreground hover:bg-secondary/70 rounded-full px-2.5 py-1 text-xs font-medium">
+            <button key={q.label} onClick={() => send(q.prompt)} disabled={loading} className={cn(chip, "bg-[#f7f7f7] font-semibold text-[#161616]")}>
               {q.label}
             </button>
           ))}
           {EDIT_EXAMPLES.map((q) => (
-            <button key={q} onClick={() => send(q)} disabled={loading} className="hover:bg-muted rounded-full border px-2.5 py-1 text-xs">
+            <button key={q} onClick={() => send(q)} disabled={loading} className={chip}>
               {q}
             </button>
           ))}

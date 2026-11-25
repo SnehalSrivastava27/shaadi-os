@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useShaadiStore } from "@/stores/useShaadiStore";
 import { formatClock } from "@/lib/data";
+import { cn } from "@/lib/utils";
+import { Em, lightPill, sansFont } from "@/components/website/ui";
 import { THEME_PRESETS } from "@/lib/invite/culture";
 
 export function VersionsSheet() {
@@ -19,23 +21,25 @@ export function VersionsSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
-          <History /> Versions ({versions.length})
-        </Button>
+        <button className={lightPill}>
+          <History /> Versions <span className="rounded-md bg-[#f4f4f4] px-1.5 text-[11px] text-[#6b6b6b]">{versions.length}</span>
+        </button>
       </SheetTrigger>
-      <SheetContent side="right">
+      <SheetContent side="right" className={cn(sansFont, "bg-white")}>
         <SheetHeader>
-          <SheetTitle>Version history</SheetTitle>
-          <SheetDescription>Har badlaav save hota hai. Kisi bhi purane version par wapas jaa sakte hain.</SheetDescription>
+          <SheetTitle className={cn(sansFont, "text-lg font-semibold tracking-[-0.02em]")}>
+            Version <Em>history</Em>
+          </SheetTitle>
+          <SheetDescription>Every change is saved. You can go back to any earlier version.</SheetDescription>
         </SheetHeader>
         <ScrollArea className="h-[calc(100vh-120px)] px-4">
           <ol className="grid gap-2 pb-6">
             {list.map((v, i) => (
-              <li key={v.id} className="rounded-lg border bg-white/60 p-3">
+              <li key={v.id} className={cn("rounded-xl border border-[#ececec] bg-white p-3 shadow-[0_8px_20px_-18px_rgba(0,0,0,0.4)]", v.id === currentId && "border-[#161616]")}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-sm font-medium">{v.changeSummary}</p>
-                    <p className="text-muted-foreground text-xs">
+                    <p className="mt-0.5 text-xs text-[#8a8a8a]">
                       {formatClock(v.timestamp)} · {v.config.brideName} &amp; {v.config.groomName} · {THEME_PRESETS[v.config.theme].label} ·{" "}
                       {v.config.functions.length} functions
                     </p>
@@ -48,7 +52,7 @@ export function VersionsSheet() {
                       variant="ghost"
                       onClick={() => {
                         restore(v.id);
-                        toast.success("Purana version wapas laaya", { description: v.changeSummary });
+                        toast.success("Restored earlier version", { description: v.changeSummary });
                       }}
                     >
                       <RotateCcw /> Restore
@@ -57,9 +61,9 @@ export function VersionsSheet() {
                 </div>
                 <div className="mt-2 flex gap-1">
                   {Object.values(v.config.palette).map((c) => (
-                    <span key={c} className="size-4 rounded-full border" style={{ background: c }} />
+                    <span key={c} className="size-4 rounded-full border border-white shadow-[0_0_0_1px_#e5e5e5]" style={{ background: c }} />
                   ))}
-                  <span className="text-muted-foreground ml-auto text-[10px]">v{list.length - i}</span>
+                  <span className="ml-auto text-[10px] font-medium text-[#8a8a8a]">v{list.length - i}</span>
                 </div>
               </li>
             ))}
