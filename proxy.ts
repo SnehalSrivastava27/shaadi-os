@@ -27,6 +27,6 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Public: login, marketing pages (+ their /welcome/* assets), guest invites + their translation API, the NudgeBee runbook callback (own Bearer token), Next internals, root files like favicon.
-  matcher: ["/((?!login|welcome|early-access|invite/|api/translate|api/ops/remediate|_next/|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|webp|ico|txt|xml)$).*)", "/welcome"],
+  // Public: login, the /demo video page, marketing pages (+ their /welcome/* assets), guest invites + their translation API, the NudgeBee runbook callback (own Bearer token), Next internals, root files like favicon.
+  matcher: ["/((?!login|welcome|early-access|demo|invite/|api/translate|api/ops/remediate|_next/|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|webp|ico|txt|xml|mp4)$).*)", "/welcome"],
 };
