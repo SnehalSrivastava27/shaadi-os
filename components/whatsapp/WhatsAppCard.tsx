@@ -11,6 +11,7 @@ type WaStatus = {
   me?: string;
   error?: string;
   groupName?: string;
+  groupMode?: boolean;
   group?: { name: string; link: string | null; qr: string | null };
 };
 
@@ -89,18 +90,12 @@ export function WhatsAppCard() {
         {state === "open" && status?.group && !status.group.qr && (
           <p className="text-muted-foreground border-t pt-3">Group &quot;{status.group.name}&quot; found, but you must be a group admin to get its invite link.</p>
         )}
-        {state === "open" && !status?.group && (
+        {state === "open" && status?.groupMode !== false && !status?.group && (
           <p className="text-muted-foreground border-t pt-3">
             Group mode: create a WhatsApp group named <b>&quot;{status?.groupName ?? "Shaadi OS"}&quot;</b> on this number. Its join QR appears here, then anyone in it can post and take tasks.
           </p>
         )}
         {(state === "connecting" || state === "closed") && <p className="text-muted-foreground">Bridge is running, connecting to WhatsApp…</p>}
-        {state === "off" && (
-          <p className="text-muted-foreground">
-            Starting the WhatsApp bridge with the dev server. The first run installs it (about 30 seconds), then the QR code appears here on its own. Use a
-            secondary number: the WhatsApp library is unofficial and a number could get banned.
-          </p>
-        )}
       </CardContent>
     </Card>
   );

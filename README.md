@@ -41,8 +41,48 @@ For a fresh project you would run `npx shadcn@latest init` first. The components
 | `GEMINI_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | Key for the chosen provider. |
 | `LLM_API_KEY` | Optional generic key (overrides the provider-specific one). |
 | `LLM_MODEL` | Optional model override. Defaults: `gemini-2.5-flash`, `gpt-4o-mini`, `claude-sonnet-5-5`. |
+| `SARVAM_API_KEY` | Sarvam AI: WhatsApp voice notes, any-language understanding, native-language replies, invite in 22 languages. See [SARVAM.md](SARVAM.md). |
+| `FLAGSMITH_ENVIRONMENT_KEY` | Flagsmith client-side environment key: live feature switches + landing page A/B test. See [FLAGSMITH.md](FLAGSMITH.md). |
+| `WA_BRIDGE_AUTOSTART` | Set to `0` to stop `npm run dev` from starting the WhatsApp bridge itself. |
 
 **No key? No problem.** The invite builder falls back to an offline rule-based parser, so the demo always works. The chat header shows whether you are in `AI: <provider>` or `Offline mode`.
+
+---
+
+## Sarvam AI + Flagsmith: how they are linked and used
+
+Two partner products run the WhatsApp side of Shaadi OS. **Sarvam** understands the family, and **Flagsmith** decides which of those features are on.
+
+```
+WhatsApp group ─► wa-bridge ─► dashboard tab (WhatsAppAgent)
+                                   │  every feature first asks Flagsmith: is it on?  (lib/flags.ts, 5 s cache)
+                                   ├─ voice note ──► Sarvam speech-to-text ─► English + spoken language   [whatsapp_voice_notes]
+                                   ├─ any request ─► Sarvam chat ─► from/to/time/people ─► map lookup      [ai_understanding]
+                                   ├─ task #N in the group, first "take N" gets it, @tagged                [whatsapp_group_mode]
+                                   └─ reply ──► English + Sarvam translate + Sarvam voice                  [whatsapp_native_replies]
+Guest invite ─► Sarvam translate ─► 22 Indian languages                                                [invite_translation]
+Fallback dialog ─► real Uber/Rapido via phone bridge                                                   [real_rides]
+/welcome ─► Flagsmith identity per visitor ─► headline variant (A/B)                                   [landing_headline]
+```
+
+### How they are linked
+- **Sarvam:** one server-side client, `lib/sarvam.ts`, with the key in `SARVAM_API_KEY` (`.env.local`, never sent to the browser). It calls Sarvam's REST API directly: `/speech-to-text` (saaras:v4, mode `translate`), `/v1/chat/completions` (sarvam-105b), `/translate` (sarvam-translate:v1), `/text-lid`, `/text-to-speech` (bulbul:v3, mp3).
+- **Flagsmith:** one server-side client, `lib/flags.ts`, that calls the Edge REST API (`/flags/`, `/identities/`) directly, with no SDK. The key is the project's client-side environment key in `FLAGSMITH_ENVIRONMENT_KEY`.
+- **Safe defaults:** with no key, with Flagsmith unreachable, or with a flag missing, every feature defaults to on. With no Sarvam key, the bot falls back to the offline rule parser and English replies. The app never breaks because a partner API is down.
+
+### How they are used
+| Where | Sarvam | Flagsmith flag |
+|---|---|---|
+| `app/api/whatsapp/voice` | Voice note → English text + spoken language | `whatsapp_voice_notes` |
+| `app/api/whatsapp/understand` | Any message, any script → pickup/drop/time/people; places resolved on OpenStreetMap | `ai_understanding` |
+| `app/api/whatsapp/send` | Translated follow-up + spoken MP3 reply | `whatsapp_native_replies` |
+| `app/api/whatsapp/*`, `WhatsAppAgent` | – | `whatsapp_group_mode` (off = self-chat tasks are auto-assigned again) |
+| `app/api/translate` + `useTranslatePage` | Whole invite page in 22 languages, batched + cached | `invite_translation` |
+| `app/api/rides/*` | – | `real_rides` (off = demo rates, no real booking) |
+| `app/welcome/page.tsx` + `proxy.ts` | – | `landing_headline` (multivariate A/B test, stable visitor id cookie) |
+| Settings → **Feature flags** card | Shows whether Sarvam is configured | Live state of every flag, polled every 5 s |
+
+Full write-ups: **[SARVAM.md](SARVAM.md)** (problems we hit and how we solved them) and **[FLAGSMITH.md](FLAGSMITH.md)** (setup, flags, A/B test, the live-flip demo).
 
 ---
 

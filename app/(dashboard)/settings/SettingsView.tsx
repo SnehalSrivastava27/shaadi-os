@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/PageHeader";
 import { WhatsAppCard } from "@/components/whatsapp/WhatsAppCard";
+import { FeatureFlagsCard } from "@/components/flags/FeatureFlagsCard";
 import { useShaadiStore } from "@/stores/useShaadiStore";
 import { initials } from "@/lib/utils";
 
@@ -132,6 +133,7 @@ export function SettingsView() {
         </Card>
 
         <WhatsAppCard />
+        <FeatureFlagsCard />
 
         <Card>
           <CardHeader>

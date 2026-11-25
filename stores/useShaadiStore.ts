@@ -94,6 +94,8 @@ interface Actions {
   acceptTask(taskId: string): ActionResult;
   /** WhatsApp group: whoever claims first gets the task. Unknown numbers join as helpers. */
   claimTask(taskId: string, who: { name: string; phone: string | null }): ActionResult;
+  /** WhatsApp location / live location from a group member: real position on the map, helper auto-added. */
+  updateLiveLocation(who: { name: string; phone: string | null }, lat: number, lng: number, at: number): void;
   declineTask(taskId: string): AssignResult | null;
   completeTask(taskId: string, actor?: string): ActionResult;
   cancelTask(taskId: string): ActionResult;
@@ -149,7 +151,19 @@ function mkPosition(deviceType: Position["deviceType"], deviceId: string, lat: n
 
 export const useShaadiStore = create<ShaadiState>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      /** Helper by phone (last 10 digits) or name; unknown WhatsApp people join as helpers. */
+      const findOrAddHelper = (who: { name: string; phone: string | null }): Helper => {
+        const last10 = (p: string | null) => (p ?? "").replace(/\D/g, "").slice(-10);
+        const phone = last10(who.phone);
+        const s = get();
+        const found = phone ? s.helpers.find((h) => last10(h.phone) === phone) : s.helpers.find((h) => h.name === who.name);
+        if (found) return found;
+        const helper: Helper = { id: uid("h"), name: who.name, relation: "WhatsApp group", phone: who.phone ? `+${who.phone}` : "", availability: "online", status: "free", locationSharing: false };
+        set((st) => ({ helpers: [...st.helpers, helper] }));
+        return helper;
+      };
+      return {
       ...initialPersisted(),
       hydrated: false,
       fallback: null,
@@ -283,19 +297,22 @@ export const useShaadiStore = create<ShaadiState>()(
           const by = s.helpers.find((h) => h.id === task.assignedHelperId)?.name;
           return { ok: false, error: by ? `${by} already took it` : `Task is ${task.status}` };
         }
-        const last10 = (p: string | null) => (p ?? "").replace(/\D/g, "").slice(-10);
-        const phone = last10(who.phone);
-        let helper = phone ? s.helpers.find((h) => last10(h.phone) === phone) : s.helpers.find((h) => h.name === who.name);
-        if (helper?.status === "busy") return { ok: false, error: `${helper.name}, you are already on a task` };
-        if (!helper) {
-          helper = { id: uid("h"), name: who.name, relation: "WhatsApp group", phone: who.phone ? `+${who.phone}` : "", availability: "online", status: "free", locationSharing: false };
-          set((st) => ({ helpers: [...st.helpers, helper!] }));
-        }
-        const h = helper;
+        const h = findOrAddHelper(who);
+        if (h.status === "busy") return { ok: false, error: `${h.name}, you are already on a task` };
         set((st) => ({
           tasks: mapTask(st.tasks, taskId, (t) => ({ ...t, status: "offered", assignedHelperId: h.id, assignedVehicleId: undefined, activity: [...t.activity, act(h.name, "Claimed on WhatsApp")] })),
         }));
         return get().acceptTask(taskId);
+      },
+
+      updateLiveLocation(who, lat, lng, at) {
+        const h = findOrAddHelper(who);
+        const last = latestPosition(get().positions, h.id);
+        if (last && last.timestamp >= at) return;
+        set((st) => ({
+          helpers: st.helpers.map((x) => (x.id === h.id ? { ...x, liveGps: true, locationSharing: true, availability: "online" } : x)),
+          positions: [...st.positions, { ...mkPosition("helper", h.id, lat, lng, 0, h.currentTaskId), timestamp: at }],
+        }));
       },
 
       declineTask(taskId) {
@@ -396,6 +413,7 @@ export const useShaadiStore = create<ShaadiState>()(
 
         const tasks = s.tasks.map((task) => {
           if (task.status !== "in_progress" || !task.sim || !task.assignedHelperId) return task;
+          if (s.helpers.find((h) => h.id === task.assignedHelperId)?.liveGps) return task; // real GPS moves them, not us
           const sim = { ...task.sim };
           const from = sim.route[sim.leg];
           const to = sim.route[sim.leg + 1];
@@ -454,7 +472,7 @@ export const useShaadiStore = create<ShaadiState>()(
         const moving = new Set(s.tasks.filter((t) => t.status === "in_progress").flatMap((t) => [t.assignedHelperId, t.assignedVehicleId]));
         const fresh: Position[] = [];
         for (const h of s.helpers) {
-          if (h.availability !== "online" || !h.locationSharing || moving.has(h.id)) continue;
+          if (h.availability !== "online" || !h.locationSharing || h.liveGps || moving.has(h.id)) continue;
           const p = latestPosition(s.positions, h.id);
           if (p) fresh.push(mkPosition("helper", h.id, p.lat, p.lng, 0));
         }
@@ -567,7 +585,8 @@ export const useShaadiStore = create<ShaadiState>()(
       setHydrated() {
         set({ hydrated: true });
       },
-    }),
+    };
+    },
     {
       name: "shaadi-os-v1",
       version: 1,

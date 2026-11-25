@@ -43,10 +43,18 @@ async function start() {
     const code = await new Promise<number | null>((res) => run(npm, ["install", "--no-audit", "--no-fund"], { cwd: DIR }).on("exit", res));
     if (code !== 0) return console.error("[wa-bridge] npm install failed; WhatsApp stays off");
   }
-  const child = run(process.execPath, ["server.mjs"], { cwd: DIR, env: { ...process.env, WA_BRIDGE_TOKEN: token, PORT: String(PORT) } });
-  g.__waBridge = child;
-  child.on("exit", () => (g.__waBridge = undefined));
-  process.on("exit", () => child.kill());
+  let quitting = false;
+  process.on("exit", () => {
+    quitting = true;
+    if (g.__waBridge && g.__waBridge !== "starting") g.__waBridge.kill();
+  });
+  const launch = () => {
+    const child = run(process.execPath, ["server.mjs"], { cwd: DIR, env: { ...process.env, WA_BRIDGE_TOKEN: token, PORT: String(PORT) } });
+    g.__waBridge = child;
+    // Crashed or killed? Bring it back, so WhatsApp doesn't silently stop working mid-wedding.
+    child.on("exit", () => !quitting && setTimeout(async () => !(await alive(token)) && launch(), 3000));
+  };
+  launch();
 }
 
 // Don't block server startup on npm install.

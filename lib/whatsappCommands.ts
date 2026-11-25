@@ -15,6 +15,13 @@ const PLACE_PATTERNS: [PlaceKey, RegExp][] = [
   ["ghar", /\bghar\b|\bhome\b/],
 ];
 
+/** "Charbagh station", "ghar", "home" -> a known place key, else null (any other place gets geocoded). */
+export function knownPlace(name: string): PlaceKey | null {
+  const s = name.toLowerCase();
+  if (/\b(home|ghar|house|wedding house)\b/.test(s)) return "ghar";
+  return PLACE_PATTERNS.find(([, re]) => re.test(s))?.[0] ?? null;
+}
+
 export const WA_HELP = [
   "Send Shaadi OS a task, for example:",
   "• Pick up Bua ji from Charbagh at 3pm, 3 people",
@@ -41,7 +48,7 @@ function istParts(ms: number) {
   return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(), h: d.getUTCHours(), min: d.getUTCMinutes() };
 }
 
-function parseTime(s: string, now: number): string {
+export function parseTime(s: string, now: number): string {
   const m = s.match(/\b(\d{1,2})[:.](\d{2})\b/) ?? s.match(/\b(\d{1,2})\s*(?:baje|bje|pm|am)\b/);
   const day = istParts(now + (/\b(kal|tomorrow)\b/.test(s) ? 86_400_000 : 0));
   let h = istParts(now).h;

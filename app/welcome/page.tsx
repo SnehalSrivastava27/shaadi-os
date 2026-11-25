@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element -- static SVG art; next/image adds nothing for SVG. */
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { variantFor } from "@/lib/flags";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import {
   ArrowRight,
@@ -338,7 +340,10 @@ const PLANS = [
   },
 ];
 
-export default function WelcomePage() {
+export default async function WelcomePage() {
+  // A/B test: Flagsmith multivariate flag "landing_headline" picks this visitor's headline; control = the original.
+  const visitor = (await cookies()).get("sos_vid")?.value;
+  const headline = visitor ? await variantFor("landing_headline", visitor) : null;
   return (
     <div className={`${sans.variable} ${serif.variable} so-welcome min-h-screen overflow-x-hidden bg-white font-[family-name:var(--font-jakarta)] text-[#161616] antialiased`}>
       {/* Nav */}
@@ -379,8 +384,12 @@ export default function WelcomePage() {
             <span className="size-1.5 rounded-full bg-[#1f8a54]" /> Wedding season 2026 · Live from Lucknow
           </p>
           <h1 className="so-rise mt-7 text-[40px] leading-[1.04] font-semibold tracking-[-0.045em] text-balance sm:text-6xl lg:text-[70px]" style={{ animationDelay: "0.08s" }}>
-            Fufa ki <Em>narazgi</Em> se accha,
-            <br className="hidden sm:block" /> to Shaadi OS ko paisa dena hai.
+            {headline ?? (
+              <>
+                Fufa ki <Em>narazgi</Em> se accha,
+                <br className="hidden sm:block" /> to Shaadi OS ko paisa dena hai.
+              </>
+            )}
           </h1>
           <p className="so-rise mx-auto mt-6 max-w-lg text-[15px] leading-relaxed text-[#5f5f5f] sm:text-base" style={{ animationDelay: "0.18s" }}>
             Pickups, helpers, RSVPs, plates and the invite website. For families who never want a guest left waiting at the station.

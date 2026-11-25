@@ -2,15 +2,16 @@
 
 import { useEffect } from "react";
 import { useShaadiStore } from "@/stores/useShaadiStore";
-import { parseWaCommand, WA_GROUP_HELP, WA_HELP } from "@/lib/whatsappCommands";
+import { parseWaCommand, WA_GROUP_HELP, WA_HELP, type WaCommand } from "@/lib/whatsappCommands";
 import type { Task } from "@/types";
 import type { NewTaskInput } from "@/stores/useShaadiStore";
 
 const LAST_SEEN_KEY = "shaadi-os:wa-last-seen";
+const LOC_SEEN_KEY = "shaadi-os:wa-loc-seen";
 const POSTERS_KEY = "shaadi-os:wa-posters"; // taskId -> who asked, so we can tag them later
 
 type Sender = { phone: string | null; jid?: string; name: string };
-type WaMessage = { id: string; text: string; ts: number; from?: "self" | "group"; sender?: Sender };
+type WaMessage = { id: string; text: string; ts: number; from?: "self" | "group"; sender?: Sender; audio?: { seconds: number } };
 type Out = { text: string; to: "self" | "group"; mentions?: string[] };
 
 // ponytail: task number = position in the task list, stable while tasks are only appended. Reset demo renumbers.
@@ -77,8 +78,7 @@ export async function sendTaskToGroup(taskId: string): Promise<boolean> {
 }
 
 /** Self-chat: with a group, the job goes to the group for helpers to claim; without one, auto-assign as before. */
-function handleSelf(text: string, hasGroup: boolean): Out[] {
-  const cmd = parseWaCommand(text);
+function handleSelf(cmd: WaCommand, hasGroup: boolean): Out[] {
   if (cmd.kind !== "task") return [{ to: "self", text: hasGroup ? WA_GROUP_HELP : WA_HELP }];
   if (hasGroup) {
     const job = postJob(cmd.input, { phone: null, name: "Organizer" });
@@ -92,12 +92,19 @@ function handleSelf(text: string, hasGroup: boolean): Out[] {
   return [{ to: "self", text: `${head}\n⚠️ No one is free. ${r && !r.ok ? r.message : ""} Book an Uber/Rapido in the app.` }];
 }
 
+const REQUEST_WORDS = /\b(laa?n[aei]|lana|lani|le\s*aa|mangwa|chh?od|pick|drop|get|bring|fetch|buy|kharid|khareed)\w*/i;
+
 /** Group: anyone posts kaam, first "le N" takes it (and gets tagged), "done N" closes it. Quiet on chit-chat. */
-function handleGroup(text: string, sender: Sender): Out[] {
-  const cmd = parseWaCommand(text);
+function handleGroup(cmd: WaCommand, text: string, sender: Sender): Out[] {
   const s = useShaadiStore.getState();
   const reply = (t: string, mentions?: string[]): Out[] => [{ to: "group", text: t, mentions }];
-  if (cmd.kind === "help") return /^(help|madad|\?)$/i.test(text.trim()) ? reply(WA_GROUP_HELP) : [];
+  if (cmd.kind === "help") {
+    if (/^(help|madad|\?)$/i.test(text.trim())) return reply(WA_GROUP_HELP);
+    // Looks like a request but we couldn't tell where: say so instead of staying silent. Chit-chat stays quiet.
+    const m: string[] = [];
+    if (REQUEST_WORDS.test(text)) return reply(`${tag(sender, m)} I couldn't tell where 🤔 Please name a place, e.g. "Get sabzi from Chappan Bhog at 5pm" or "Pick up Bua ji from Charbagh at 3pm".`, m);
+    return [];
+  }
   if (cmd.kind === "list") {
     const open = s.tasks.filter((t) => ["created", "declined"].includes(t.status));
     return reply(open.length ? `Open tasks:\n${open.map((t) => `#${taskNo(t.id)} ${t.title} (${fmtWhen(t.time)})`).join("\n")}\nTo take one: *take <number>*` : "No open tasks right now 🎉");
@@ -117,6 +124,48 @@ function handleGroup(text: string, sender: Sender): Out[] {
     return reply(r.ok ? `✅ #${cmd.no} done: ${t.title}. Thank you ${tag(sender, m)}!${asker}` : `#${cmd.no}: ${r.error}`, m);
   }
   return [postJob(cmd.input, sender)];
+}
+
+const post = (url: string, body: unknown) =>
+  fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+
+/**
+ * Message -> command. Voice notes go through Sarvam speech-to-text first; text the rule parser can't read
+ * (other languages, free-form Hinglish) goes to Sarvam chat. Also returns the sender's language for the reply.
+ */
+async function understand(m: WaMessage): Promise<{ cmd: WaCommand; text: string; lang?: string; voice?: boolean; note?: string }> {
+  let text = m.text;
+  let lang: string | undefined;
+  if (m.audio) {
+    const r = await post("/api/whatsapp/voice", { id: m.id });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.text) return { cmd: { kind: "help" }, text: "", note: `🎙️ Couldn't read that voice note${data.error ? `: ${data.error}` : ""}.` };
+    text = data.text;
+    lang = data.lang;
+  }
+  let cmd = parseWaCommand(text);
+  // Requests (and anything the rules can't read) go to Sarvam, which knows every place via the map lookup.
+  // Claims/done/list stay rule-based; short chit-chat ("ok", "👍") never costs a call.
+  if (cmd.kind === "task" || (cmd.kind === "help" && text.trim().length >= 8)) {
+    const city = useShaadiStore.getState().publishedConfig.city;
+    const data = await (await post("/api/whatsapp/understand", { text, city })).json().catch(() => ({}));
+    lang ??= data.lang;
+    if (data.input) cmd = { kind: "task", input: data.input };
+    else if (data.unknownPlace && cmd.kind !== "task") return { cmd, text, lang, note: `📍 Couldn't find "${data.unknownPlace}" on the map. Please add the area, e.g. "${data.unknownPlace}, Gomti Nagar".` };
+  }
+  if (cmd.kind === "task" && m.audio) cmd.input.title = `🎙️ ${text}`.slice(0, 80);
+  return { cmd, text, lang, voice: !!m.audio };
+}
+
+/** Live locations shared in WhatsApp -> helper dots on the map, everyone at once. */
+async function syncLocations() {
+  const since = Number(localStorage.getItem(LOC_SEEN_KEY)) || 0;
+  const res = await fetch(`/api/whatsapp/locations?since=${since}`, { cache: "no-store" });
+  if (!res.ok) return;
+  const { locations } = (await res.json()) as { locations: { lat: number; lng: number; ts: number; name: string; phone: string | null }[] };
+  const store = useShaadiStore.getState();
+  for (const l of locations) store.updateLiveLocation({ name: l.name, phone: l.phone }, l.lat, l.lng, l.ts);
+  if (locations.length) localStorage.setItem(LOC_SEEN_KEY, String(Math.max(...locations.map((l) => l.ts))));
 }
 
 /** Polls the WhatsApp bridge inbox. With a group, every job is posted there and helpers claim it (they get @tagged). Renders nothing. */
@@ -142,13 +191,18 @@ export function WhatsAppAgent() {
         const { messages, hasGroup } = (await res.json()) as { messages: WaMessage[]; hasGroup?: boolean };
         for (const m of messages) {
           localStorage.setItem(LAST_SEEN_KEY, String(m.ts)); // mark before acting: a reload never recreates the task
-          const outs = m.from === "group" ? handleGroup(m.text, m.sender ?? { phone: null, name: "Guest" }) : handleSelf(m.text, !!hasGroup);
-          for (const out of outs) {
-            await fetch("/api/whatsapp/send", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(out) });
-          }
+          const group = m.from === "group";
+          const u = await understand(m);
+          const outs: Out[] = u.note
+            ? [{ to: group ? "group" : "self", text: u.note }]
+            : group
+              ? handleGroup(u.cmd, u.text, m.sender ?? { phone: null, name: "Guest" })
+              : handleSelf(u.cmd, !!hasGroup);
+          for (const out of outs) await post("/api/whatsapp/send", { ...out, lang: u.lang, voice: u.voice });
         }
       };
       try {
+        await syncLocations();
         await (navigator.locks ? navigator.locks.request("shaadi-os-wa-inbox", run) : run());
       } catch {
         delay = 15_000;

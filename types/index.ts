@@ -100,6 +100,8 @@ export interface Helper {
   status: HelperStatus;
   locationSharing: boolean;
   currentTaskId?: string;
+  /** Real location from WhatsApp (live) location sharing: the simulator never moves this helper. */
+  liveGps?: boolean;
 }
 
 export type VehicleStatus = "free" | "in_use" | "unavailable";
