@@ -27,7 +27,7 @@ const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "500", "6
 
 export const metadata: Metadata = {
   title: "Shaadi OS: Fufa ki narazgi se accha, to Shaadi OS ko paisa dena hai",
-  description: "Pickups, helpers, RSVPs, catering aur invite website: poori shaadi ek control room se.",
+  description: "Pickups, helpers, RSVPs, catering and the invite website: the whole wedding from one control room.",
 };
 
 /** Italic serif accent word inside sans headlines. */
@@ -80,7 +80,7 @@ function Pill({ tone, children }: { tone: "green" | "blue" | "amber"; children: 
 
 function PickupsMock() {
   const rows = [
-    { who: "Bua ji · Charbagh", sub: "Rohit · Innova", pill: <Pill tone="green">Pahunch gaye</Pill>, c: "#7a1f2b" },
+    { who: "Bua ji · Charbagh", sub: "Rohit · Innova", pill: <Pill tone="green">Arrived</Pill>, c: "#7a1f2b" },
     { who: "Sharma Uncle · Airport", sub: "Ramesh · Scorpio", pill: <Pill tone="blue">On the way</Pill>, c: "#c9822b" },
     { who: "Mausi ji · Airport", sub: "Pinku · Swift", pill: <Pill tone="amber">Offered</Pill>, c: "#3f7d5c" },
     { who: "Nana ji · Charbagh", sub: "Assigning…", pill: <Pill tone="amber">Queued</Pill>, c: "#6b6b6b" },
@@ -152,15 +152,15 @@ function CateringFormMock() {
           <span className="rounded-lg bg-white px-2.5 py-1.5 font-medium">🔴 Non-veg 13</span>
         </div>
       </div>
-      <div className="mt-3 rounded-xl bg-[#f7f7f7] px-4 py-3 text-sm text-[#8a8a8a]">2 parivaar ka jawab baaki…</div>
+      <div className="mt-3 rounded-xl bg-[#f7f7f7] px-4 py-3 text-sm text-[#8a8a8a]">2 families yet to reply…</div>
     </div>
   );
 }
 
 function CabsMock() {
   const rows = [
-    { id: "RPD-541", app: "Rapido", tone: "bg-[#fdf6d8] text-[#9a7a06]", product: "Cab Economy", price: "₹246", note: "Airport → Ghar · 6 min" },
-    { id: "UBR-892", app: "Uber", tone: "bg-[#efefef] text-[#3a3a3a]", product: "Uber Go", price: "₹324", note: "Airport → Ghar · 8 min" },
+    { id: "RPD-541", app: "Rapido", tone: "bg-[#fdf6d8] text-[#9a7a06]", product: "Cab Economy", price: "₹246", note: "Airport → Home · 6 min" },
+    { id: "UBR-892", app: "Uber", tone: "bg-[#efefef] text-[#3a3a3a]", product: "Uber Go", price: "₹324", note: "Airport → Home · 8 min" },
   ];
   return (
     <div className={`mx-auto grid w-full max-w-sm gap-4 rounded-2xl border border-[#ececec] bg-white p-4 shadow-[0_12px_30px_-20px_rgba(0,0,0,0.25)] ${fadeBottom}`}>
@@ -191,9 +191,9 @@ function CabsMock() {
 
 function NimantranCard() {
   const rows = [
-    ["Mehmaan", "Sharma Uncle ji", "Function", "Sangeet"],
-    ["Tareekh", "11 Dec, 2026", "Samay", "8:00 PM"],
-    ["Venue", "Hyatt Regency, Lucknow", "Log", "2 · Veg"],
+    ["Guest", "Sharma Uncle ji", "Function", "Sangeet"],
+    ["Date", "11 Dec, 2026", "Time", "8:00 PM"],
+    ["Venue", "Hyatt Regency, Lucknow", "People", "2 · Veg"],
   ];
   return (
     <div className="rounded-[1.75rem] bg-white p-4 text-[#161616] sm:p-6">
@@ -203,7 +203,7 @@ function NimantranCard() {
           <HeartHandshake className="size-6 text-[#7a1f2b]" /> Shaadi OS
         </p>
         <div className="mt-8 flex items-end justify-between border-b border-dashed border-[#d9d9d9] pb-6">
-          <p className="text-3xl font-semibold tracking-tight sm:text-4xl">Nimantran</p>
+          <p className="text-3xl font-semibold tracking-tight sm:text-4xl">Invitation</p>
           <p className="text-lg text-[#9a9a9a] sm:text-2xl">#RA-0112</p>
         </div>
         {rows.map(([l1, v1, l2, v2], i) => (
@@ -231,7 +231,7 @@ function RsvpChartCard() {
           <span className="flex size-14 items-center justify-center rounded-full bg-[#f3f3f3]">
             <Users className="size-6 text-[#7a1f2b]" />
           </span>
-          <p className="mt-6 text-xl font-medium tracking-tight sm:text-2xl">Kul mehmaan (haan wale)</p>
+          <p className="mt-6 text-xl font-medium tracking-tight sm:text-2xl">Total guests (confirmed)</p>
           <p className="mt-1 text-5xl font-semibold tracking-[-0.04em] sm:text-6xl">186</p>
           <svg viewBox="0 0 400 160" className="mt-6 w-full" aria-hidden>
             <defs>
@@ -249,7 +249,7 @@ function RsvpChartCard() {
             <circle cx="300" cy="55" r="6" fill="#1f8a54" stroke="#fff" strokeWidth="2" />
           </svg>
           <p className="-mt-10 inline-flex items-center gap-2 text-sm text-[#1f8a54]">
-            ↗ <span className="rounded-full bg-[#e8f6ee] px-3 py-1 font-semibold">+12 aaj</span>
+            ↗ <span className="rounded-full bg-[#e8f6ee] px-3 py-1 font-semibold">+12 today</span>
           </p>
         </div>
       </div>
@@ -288,52 +288,52 @@ const RITUAL_MARKS = [
 ];
 
 const CAPABILITIES = [
-  { icon: MapPinned, title: "Live Control Room", text: "Har helper aur gaadi naqshe par, live. 5 minute se purani location? Grey." },
-  { icon: Zap, title: "Auto-assign", text: "Sabse paas wala free helper aur sahi seats wali gaadi, ek tap mein." },
-  { icon: Users, title: "Guests & RSVP", text: "Har parivaar ka personal link, sirf unke functions ke saath." },
-  { icon: UtensilsCrossed, title: "Catering count", text: "Har function ki plates: veg, Jain, non-veg. Caterer ko ek tap mein copy." },
-  { icon: Globe, title: "Invite builder", text: "Hinglish mein chat kijiye, website tayyar. Paanch templates, har badlaav saved." },
-  { icon: BellRing, title: "Backup cabs", text: "Sab busy? Uber ya Rapido ka rate dekh ke booking, guest ko message ready." },
+  { icon: MapPinned, title: "Live Control Room", text: "Every helper and car on the map, live. Location older than 5 minutes? Greyed out." },
+  { icon: Zap, title: "Auto-assign", text: "The nearest free helper and a car with the right seats, in one tap." },
+  { icon: Users, title: "Guests & RSVP", text: "A personal link for every family, showing only their functions." },
+  { icon: UtensilsCrossed, title: "Catering count", text: "Plates for every function: veg, Jain, non-veg. Copy for the caterer in one tap." },
+  { icon: Globe, title: "Invite builder", text: "Describe it in a chat, get a website. Five templates, every change saved." },
+  { icon: BellRing, title: "Backup cabs", text: "Everyone busy? Compare Uber and Rapido rates, book, and the guest message is ready." },
 ];
 
 const PRINCIPLES = [
-  { icon: Zap, title: "2 second dispatch", text: "Train aate hi pickup tayyar." },
-  { icon: ShieldCheck, title: "Permission se location", text: "Sirf shaadi ke dinon mein, sirf haan bolne par." },
-  { icon: Languages, title: "Hinglish & हिंदी", text: "Jaise ghar mein baat hoti hai." },
-  { icon: ArrowRightLeft, title: "Decline? Agla helper", text: "Koi mana kare to turant doosra." },
-  { icon: Sparkles, title: "Cultural smarts", text: "Punjabi ho to jaago, Bengali ho to gaye holud." },
-  { icon: HeartHandshake, title: "Poora parivaar", text: "Chacha se cousin tak, sab ek app mein." },
+  { icon: Zap, title: "2 second dispatch", text: "The pickup is ready the moment the train arrives." },
+  { icon: ShieldCheck, title: "Location with permission", text: "Only on wedding days, and only when they say yes." },
+  { icon: Languages, title: "English & हिंदी", text: "Speaks the way your family does." },
+  { icon: ArrowRightLeft, title: "Declined? Next helper", text: "If someone says no, the next one gets it instantly." },
+  { icon: Sparkles, title: "Cultural smarts", text: "Jaago for a Punjabi wedding, gaye holud for a Bengali one." },
+  { icon: HeartHandshake, title: "The whole family", text: "From chacha to the cousins, everyone in one app." },
 ];
 
 const PLANS = [
   {
-    name: "Ghar ki shaadi",
-    sub: "Chhota function, apne log, poora control.",
+    name: "Home wedding",
+    sub: "A small function, your own people, full control.",
     price: "₹0",
     unit: "",
-    cta: "Demo shuru karo",
+    cta: "Start the demo",
     href: "/early-access",
-    feats: ["Control Room + live map", "50 mehmaan tak", "1 invite template", "Rule-based invite builder"],
+    feats: ["Control Room + live map", "Up to 50 guests", "1 invite template", "Rule-based invite builder"],
     featured: false,
   },
   {
-    name: "Grand shaadi",
-    sub: "Teen din, paanch functions, sau baatein.",
+    name: "Grand wedding",
+    sub: "Three days, five functions, a hundred details.",
     price: "₹4,999",
-    unit: "/shaadi",
-    cta: "Shuru karo",
+    unit: "/wedding",
+    cta: "Get started",
     href: "/early-access",
-    feats: ["Sab kuch Ghar ki shaadi ka", "Unlimited mehmaan", "Paanchon templates + AI builder", "Uber / Rapido backup", "Catering export"],
+    feats: ["Everything in Home wedding", "Unlimited guests", "All five templates + AI builder", "Uber / Rapido backup", "Catering export"],
     featured: true,
   },
   {
-    name: "Big fat shaadi",
-    sub: "Destination, 2000 mehmaan, 3 sheher.",
-    price: "Baat karte hain",
+    name: "Big fat wedding",
+    sub: "Destination, 2000 guests, 3 cities.",
+    price: "Let's talk",
     unit: "",
-    cta: "Call karo",
+    cta: "Call us",
     href: "/early-access",
-    feats: ["Sab kuch Grand shaadi ka", "Multi-city fleet", "Dedicated wedding manager", "Custom integrations"],
+    feats: ["Everything in Grand wedding", "Multi-city fleet", "Dedicated wedding manager", "Custom integrations"],
     featured: false,
   },
 ];
@@ -351,11 +351,16 @@ export default function WelcomePage() {
             <a href="#features" className="hover:text-[#161616]">Features</a>
             <a href="#invite" className="hover:text-[#161616]">Invite</a>
             <a href="#plans" className="hover:text-[#161616]">Plans</a>
-            <a href="#parivaar" className="hover:text-[#161616]">Parivaar</a>
+            <a href="#parivaar" className="hover:text-[#161616]">Family</a>
           </nav>
-          <PillButton href="/" light>
-            Open app <ArrowRight className="size-3.5" />
-          </PillButton>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/login" className="rounded-lg px-2.5 py-2 text-[13px] font-semibold text-[#3a3a3a] hover:text-[#161616]">
+              Log in
+            </Link>
+            <PillButton href="/login?mode=signup" className="px-4 py-2 text-[13px]">
+              Sign up <ArrowRight className="size-3.5" />
+            </PillButton>
+          </div>
         </div>
       </header>
 
@@ -371,21 +376,21 @@ export default function WelcomePage() {
 
         <div className="mx-auto max-w-5xl px-5 pt-20 text-center sm:pt-28">
           <p className="so-rise mx-auto inline-flex items-center gap-2 rounded-full border border-[#ececec] bg-white px-3 py-1 text-xs font-medium text-[#5f5f5f] shadow-sm">
-            <span className="size-1.5 rounded-full bg-[#1f8a54]" /> Shaadi season 2026 · Lucknow se live
+            <span className="size-1.5 rounded-full bg-[#1f8a54]" /> Wedding season 2026 · Live from Lucknow
           </p>
           <h1 className="so-rise mt-7 text-[40px] leading-[1.04] font-semibold tracking-[-0.045em] text-balance sm:text-6xl lg:text-[70px]" style={{ animationDelay: "0.08s" }}>
             Fufa ki <Em>narazgi</Em> se accha,
             <br className="hidden sm:block" /> to Shaadi OS ko paisa dena hai.
           </h1>
           <p className="so-rise mx-auto mt-6 max-w-lg text-[15px] leading-relaxed text-[#5f5f5f] sm:text-base" style={{ animationDelay: "0.18s" }}>
-            Pickups, helpers, RSVPs, plates aur invite website. Un parivaaron ke liye jo chahte hain ki shaadi mein koi station pe intezaar na kare.
+            Pickups, helpers, RSVPs, plates and the invite website. For families who never want a guest left waiting at the station.
           </p>
           <div className="so-rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ animationDelay: "0.28s" }}>
             <PillButton href="/">
-              Demo dekho <ArrowRight className="size-4" />
+              See the demo <ArrowRight className="size-4" />
             </PillButton>
             <PillButton href="/website" light className="py-3">
-              Invite banao
+              Make an invite
             </PillButton>
           </div>
         </div>
@@ -393,14 +398,14 @@ export default function WelcomePage() {
         {/* Floating UI cards */}
         <div className="so-rise relative mx-auto mt-16 max-w-xl px-5" style={{ animationDelay: "0.38s" }}>
           <div className="absolute -top-8 right-2 z-10 rounded-2xl border border-[#ececec] bg-white px-5 py-3 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.45)] sm:-right-10">
-            <p className="text-xs text-[#5f5f5f]">Aaj ke pickups</p>
+            <p className="text-xs text-[#5f5f5f]">Today’s pickups</p>
             <p className="text-2xl font-semibold tracking-tight">12 / 14</p>
           </div>
           <div className="rounded-3xl border border-[#ececec] bg-white p-5 shadow-[0_30px_60px_-35px_rgba(0,0,0,0.4)]">
-            <p className="text-sm font-semibold">Abhi raaste mein</p>
+            <p className="text-sm font-semibold">On the road now</p>
             {[
-              ["RB", "Rohit Bhaiya", "Bua ji · Charbagh → Ghar", true, "#7a1f2b"],
-              ["R", "Ramesh", "Sharma Uncle · Airport → Ghar", false, "#c9822b"],
+              ["RB", "Rohit Bhaiya", "Bua ji · Charbagh → Home", true, "#7a1f2b"],
+              ["R", "Ramesh", "Sharma Uncle · Airport → Home", false, "#c9822b"],
               ["P", "Pinku", "Mithai · Chappan Bhog", true, "#3f7d5c"],
             ].map(([i, n, t, on, c], k) => (
               <div key={n as string} className={`mt-3 flex items-center gap-3 rounded-xl px-3 py-2.5 ${k !== 1 ? "bg-[#f7f7f7]" : ""}`}>
@@ -429,18 +434,18 @@ export default function WelcomePage() {
           <SectionHead
             title={
               <>
-                Shaadi chalane ke liye
-                <br /> sab kuch, <Em>ek jagah</Em>
+                Everything to run a wedding,
+                <br /> <Em>in one place</Em>
               </>
             }
-            sub="Station se pandal tak: har pickup, har mehmaan aur har thaali saaf-saaf."
+            sub="From the station to the pandal: every pickup, every guest and every plate, crystal clear."
           />
           <div className="mt-14 grid gap-4 md:grid-cols-2">
             {[
-              { lead: "Auto-assign pickups", rest: "nearest helper aur sahi gaadi, live tracking ke saath.", mock: <PickupsMock /> },
-              { lead: "Poora parivaar", rest: "helpers aur gaadiyan ek network mein, location sirf permission se.", mock: <HelpersGridMock /> },
-              { lead: "RSVP se plates", rest: "har jawab aate hi catering count apne aap update.", mock: <CateringFormMock /> },
-              { lead: "Backup cabs", rest: "sab busy ho to Uber aur Rapido ka best rate, turant.", mock: <CabsMock /> },
+              { lead: "Auto-assign pickups", rest: "the nearest helper and the right car, with live tracking.", mock: <PickupsMock /> },
+              { lead: "The whole family", rest: "helpers and cars in one network, location only with permission.", mock: <HelpersGridMock /> },
+              { lead: "RSVPs to plates", rest: "the catering count updates itself with every reply.", mock: <CateringFormMock /> },
+              { lead: "Backup cabs", rest: "if everyone is busy, the best Uber and Rapido rate, instantly.", mock: <CabsMock /> },
             ].map((b) => (
               <div key={b.lead} className="flex h-[440px] flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-[#fcfcfc] px-6 pt-7 sm:px-10">
                 <p className="mx-auto max-w-sm text-center text-[14px] leading-relaxed text-[#5f5f5f]">
@@ -454,7 +459,7 @@ export default function WelcomePage() {
       </section>
 
       {/* Ritual marquee (logo strip) */}
-      <section className="overflow-hidden py-6" aria-label="Rasmein">
+      <section className="overflow-hidden py-6" aria-label="Rituals">
         <div className="so-marquee flex w-max items-center gap-16 text-[#4a4a4a]">
           {[...RITUAL_MARKS, ...RITUAL_MARKS].map((r, i) => (
             <span key={i} className={`flex items-center gap-2 whitespace-nowrap ${r.c}`}>
@@ -470,11 +475,11 @@ export default function WelcomePage() {
           <SectionHead
             title={
               <>
-                Dekhiye Shaadi OS
-                <br /> kya kya <Em>sambhaalta</Em> hai
+                See everything
+                <br /> Shaadi OS <Em>handles</Em>
               </>
             }
-            sub="Shaadi ka har department, bina ek bhi Excel sheet ke."
+            sub="Every department of the wedding, without a single Excel sheet."
           />
           <div className="mt-14 grid overflow-hidden rounded-2xl border border-[#ececec] sm:grid-cols-2">
             {CAPABILITIES.map((c, i) => (
@@ -497,19 +502,19 @@ export default function WelcomePage() {
             <NimantranCard />
             <div>
               <h3 className="text-[34px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-5xl">
-                Invite banao, bas <em className="font-[family-name:var(--font-cormorant)] font-medium text-[#f0b36a] italic">bol ke</em>
+                Make an invite, <em className="font-[family-name:var(--font-cormorant)] font-medium text-[#f0b36a] italic">just by asking</em>
               </h3>
-              <p className="mt-4 max-w-md text-[15px] text-white/60">“Punjabi shaadi, 20 Jan, Amritsar.” Bas itna. Baaki website khud banti hai.</p>
+              <p className="mt-4 max-w-md text-[15px] text-white/60">“Punjabi wedding, 20 Jan, Amritsar.” That’s it. The website builds itself.</p>
               <CheckList
                 dark
                 items={[
-                  ["Bolo aur bano", "rasmein, venue, dress code aur swagat sandesh tayyar."],
-                  ["Har mehmaan ka link", "sirf unke functions, unke naam ke saath."],
-                  ["Har badlaav saved", "koi bhi purana version ek tap mein wapas."],
+                  ["Say it, see it", "rituals, venue, dress code and welcome message, ready."],
+                  ["A link for every guest", "only their functions, with their name on it."],
+                  ["Every change saved", "bring back any old version in one tap."],
                 ]}
               />
               <PillButton href="/website" light className="mt-9">
-                Invite builder kholo
+                Open the invite builder
               </PillButton>
             </div>
           </div>
@@ -517,19 +522,19 @@ export default function WelcomePage() {
             <RsvpChartCard />
             <div>
               <h3 className="text-[34px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-5xl">
-                Har RSVP, har <em className="font-[family-name:var(--font-cormorant)] font-medium text-[#f0b36a] italic">thaali</em> live
+                Every RSVP, every <em className="font-[family-name:var(--font-cormorant)] font-medium text-[#f0b36a] italic">plate</em>, live
               </h3>
-              <p className="mt-4 max-w-md text-[15px] text-white/60">Mehmaan ne haan kaha? Caterer ki list usi second badal gayi.</p>
+              <p className="mt-4 max-w-md text-[15px] text-white/60">A guest said yes? The caterer’s list changes that same second.</p>
               <CheckList
                 dark
                 items={[
-                  ["Real-time count", "har function ke liye alag."],
-                  ["Veg / Jain / Non-veg", "kisi ki plate galat nahi jaayegi."],
-                  ["Arrivals → pickups", "train ka time daalo, pickup task tayyar."],
+                  ["Real-time count", "separate for every function."],
+                  ["Veg / Jain / Non-veg", "nobody gets the wrong plate."],
+                  ["Arrivals → pickups", "enter the train time and the pickup task is ready."],
                 ]}
               />
               <PillButton href="/guests" light className="mt-9">
-                Guests dekho
+                See guests
               </PillButton>
             </div>
           </div>
@@ -542,11 +547,11 @@ export default function WelcomePage() {
           <SectionHead
             title={
               <>
-                Parivaar ke liye bana,
-                <br /> shaadi ke liye <Em>tayyar</Em>
+                Built for families,
+                <br /> <Em>ready</Em> for the wedding
               </>
             }
-            sub="Shuru karna aasaan, aur badi se badi baraat ke liye bhi taiyaar."
+            sub="Easy to start, and ready for even the biggest baraat."
           />
           <div className="mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {PRINCIPLES.map((p) => (
@@ -558,7 +563,7 @@ export default function WelcomePage() {
             ))}
           </div>
           <div className="mt-14 text-center">
-            <PillButton href="/early-access">Aaj hi shuru karo</PillButton>
+            <PillButton href="/early-access">Start today</PillButton>
           </div>
         </div>
       </section>
@@ -568,7 +573,7 @@ export default function WelcomePage() {
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1fr_1fr]">
           <div>
             <h2 className="text-[34px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-5xl">
-              Aapka shaadi ka buddy, jo <em className="font-[family-name:var(--font-cormorant)] font-medium text-[#f0b36a] italic">sab sambhaale</em>.
+              Your wedding buddy that <em className="font-[family-name:var(--font-cormorant)] font-medium text-[#f0b36a] italic">handles it all</em>.
             </h2>
             <figure className="mt-10 border-l-2 border-[#f0b36a]/60 pl-6">
               <blockquote className="font-[family-name:var(--font-cormorant)] text-2xl leading-snug text-white/90 italic sm:text-3xl">
@@ -577,7 +582,17 @@ export default function WelcomePage() {
               <figcaption className="mt-4 text-sm text-white/50">Fufa ji, Varanasi · professional narazgi expert</figcaption>
             </figure>
           </div>
-          <img src="/welcome/paper.svg" alt="" loading="lazy" className="mx-auto w-full max-w-[520px]" />
+          <div className="relative mx-auto w-full max-w-[520px]">
+            <img src="/welcome/paper.svg" alt="" loading="lazy" className="w-full opacity-90" />
+            <img
+              src="/welcome/fufa.png"
+              alt="Fufa ji sitting on a chair, arms crossed, looking unimpressed"
+              loading="lazy"
+              width={434}
+              height={643}
+              className="absolute bottom-[-4%] left-1/2 w-[52%] -translate-x-1/2 drop-shadow-[0_24px_30px_rgba(0,0,0,0.55)]"
+            />
+          </div>
         </div>
       </section>
 
@@ -587,10 +602,10 @@ export default function WelcomePage() {
           <SectionHead
             title={
               <>
-                Har shaadi ke liye <Em>plan</Em>
+                A <Em>plan</Em> for every wedding
               </>
             }
-            sub="Chhote function se big fat shaadi tak. Fufa ji ko manane se sasta, guaranteed."
+            sub="From small functions to big fat weddings. Cheaper than winning Fufa ji over, guaranteed."
           />
           <div className="mt-14 grid gap-4 lg:grid-cols-3">
             {PLANS.map((p) => (
@@ -598,7 +613,7 @@ export default function WelcomePage() {
                 <div className={`rounded-xl p-6 ${p.featured ? hatch + " bg-[#f7f7f7]" : "bg-[#f7f7f7]"}`}>
                   <div className="flex items-center justify-between">
                     <p className="text-[17px] font-semibold">{p.name}</p>
-                    {p.featured && <span className="rounded-full bg-[#7a1f2b] px-2.5 py-0.5 text-[11px] font-semibold text-white">Sabse pasand</span>}
+                    {p.featured && <span className="rounded-full bg-[#7a1f2b] px-2.5 py-0.5 text-[11px] font-semibold text-white">Most popular</span>}
                   </div>
                   <p className="mt-1.5 text-[14px] text-[#5f5f5f]">{p.sub}</p>
                   <p className="mt-6 text-4xl font-semibold tracking-[-0.04em]">
@@ -610,7 +625,7 @@ export default function WelcomePage() {
                   </Link>
                 </div>
                 <div className="px-4 py-5">
-                  <p className="text-[13px] text-[#8a8a8a]">Shaamil hai :</p>
+                  <p className="text-[13px] text-[#8a8a8a]">Includes :</p>
                   <ul className="mt-3 grid gap-2.5">
                     {p.feats.map((f) => (
                       <li key={f} className="flex items-center gap-2.5 text-[14px] font-medium">
@@ -628,7 +643,7 @@ export default function WelcomePage() {
       {/* Testimonials */}
       <section className="bg-[#1b1b1b] px-5 py-24 text-white">
         <div className="mx-auto max-w-6xl">
-          <SectionHead dark title={<>Parivaar ne kya kaha</>} sub="Asli rishtedaar, kaalpanik naam. Kahaaniyan aapke ghar jaisi hi hongi." />
+          <SectionHead dark title={<>What the family said</>} sub="Real relatives, made-up names. The stories will sound just like your family." />
           <div className="mt-14 grid gap-4 md:grid-cols-3">
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white p-10 text-[#161616]">
               <p className="text-6xl font-semibold tracking-[-0.04em]">4.9</p>
@@ -637,11 +652,11 @@ export default function WelcomePage() {
                   <Star key={i} className="size-6 fill-[#f5a524] text-[#f5a524]" />
                 ))}
               </div>
-              <p className="mt-3 text-sm text-[#5f5f5f]">Mausiyon ki average rating</p>
+              <p className="mt-3 text-sm text-[#5f5f5f]">Average rating from the aunties</p>
             </div>
             {[
-              ["Pinky Didi", "Bride's cousin", "“Pehli baar kisi shaadi mein catering ki ginti sahi aayi. Halwai bhi shock mein tha.”"],
-              ["Rohit Bhaiya", "Helper no. 1", "“Phone pe sirf ek card aata hai: Accept ya Decline. Na 40 missed calls, na ‘kahan ho?’.”"],
+              ["Pinky Didi", "Bride's cousin", "“For the first time at any wedding, the catering count was right. Even the halwai was shocked.”"],
+              ["Rohit Bhaiya", "Helper no. 1", "“My phone gets just one card: Accept or Decline. No 40 missed calls, no ‘where are you?’.”"],
             ].map(([n, r, q]) => (
               <div key={n} className="rounded-2xl bg-white p-8 text-[#161616]">
                 <p className="text-sm text-[#5f5f5f]">
@@ -661,10 +676,10 @@ export default function WelcomePage() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(20,8,10,0.62),rgba(20,8,10,0.25)_70%)]" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center">
             <h2 className="max-w-3xl text-[34px] leading-[1.06] font-semibold tracking-[-0.035em] text-balance text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-6xl">
-              Pickups Shaadi OS sambhaale, aap pheron pe dhyaan dein.
+              Let Shaadi OS handle the pickups. You focus on the pheras.
             </h2>
             <PillButton href="/" className="mt-8">
-              Demo dekho, bilkul free <ArrowRight className="size-4" />
+              See the demo, totally free <ArrowRight className="size-4" />
             </PillButton>
           </div>
         </div>
@@ -678,7 +693,7 @@ export default function WelcomePage() {
               <p className="flex items-center gap-2 text-lg font-bold">
                 <HeartHandshake className="size-6 text-[#f0b36a]" /> Shaadi OS
               </p>
-              <p className="mt-3 max-w-xs text-sm text-white/60">Shaadi ka command center: pickups, mehmaan, thaali aur invite, ek jagah.</p>
+              <p className="mt-3 max-w-xs text-sm text-white/60">The wedding command center: pickups, guests, plates and invites, in one place.</p>
             </div>
             <div>
               <p className="text-sm text-white/50">App</p>
@@ -690,7 +705,7 @@ export default function WelcomePage() {
               </ul>
             </div>
             <div>
-              <p className="text-sm text-white/50">Aur</p>
+              <p className="text-sm text-white/50">More</p>
               <ul className="mt-4 grid gap-2.5 text-sm">
                 <li><Link href="/settings" className="hover:text-[#f0b36a]">Settings</Link></li>
                 <li><Link href="/invite/g01" className="hover:text-[#f0b36a]">Sample invite</Link></li>
@@ -698,7 +713,7 @@ export default function WelcomePage() {
               </ul>
             </div>
           </div>
-          <p className="mt-14 border-t border-white/10 pt-6 text-center text-xs text-white/40">© 2026 Shaadi OS · Shubh Vivah 🙏</p>
+          <p className="mt-14 border-t border-white/10 pt-6 text-center text-xs text-white/40">© 2026 Shaadi OS · Made for Indian weddings 🙏</p>
         </div>
       </footer>
     </div>
