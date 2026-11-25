@@ -1,12 +1,14 @@
 // Dev convenience: starts wa-bridge with the Next server so the WhatsApp QR shows up in Settings on its own.
-// Skipped when WA_BRIDGE_URL is set (you run the bridge yourself), in production, or with WA_BRIDGE_AUTOSTART=0.
+// Skipped when WA_BRIDGE_URL is set (you run the bridge yourself), with WA_BRIDGE_AUTOSTART=0, and in production
+// unless WA_BRIDGE_AUTOSTART=1 (Fly.io: one always-on machine, login kept on a volume via WA_DATA_DIR).
 import { spawn, type ChildProcess } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const DIR = path.join(process.cwd(), "wa-bridge");
-const TOKEN_FILE = path.join(DIR, ".token"); // git-ignored; stable so a bridge left running survives dev restarts
+const DATA_DIR = process.env.WA_DATA_DIR || DIR; // where the token and the WhatsApp login live
+const TOKEN_FILE = path.join(DATA_DIR, ".token"); // git-ignored; stable so a bridge left running survives restarts
 const PORT = 8790;
 const g = globalThis as { __waBridge?: ChildProcess | "starting" };
 
@@ -24,9 +26,11 @@ async function alive(token: string) {
 }
 
 async function start() {
-  if (process.env.NODE_ENV === "production" || process.env.WA_BRIDGE_AUTOSTART === "0" || process.env.WA_BRIDGE_URL) return;
+  const auto = process.env.WA_BRIDGE_AUTOSTART;
+  if (auto === "0" || process.env.WA_BRIDGE_URL || (process.env.NODE_ENV === "production" && auto !== "1")) return;
   if (!existsSync(path.join(DIR, "server.mjs")) || g.__waBridge) return;
   g.__waBridge = "starting";
+  mkdirSync(DATA_DIR, { recursive: true });
 
   let token = existsSync(TOKEN_FILE) ? readFileSync(TOKEN_FILE, "utf8").trim() : "";
   if (token.length < 16) {
@@ -49,7 +53,7 @@ async function start() {
     if (g.__waBridge && g.__waBridge !== "starting") g.__waBridge.kill();
   });
   const launch = () => {
-    const child = run(process.execPath, ["server.mjs"], { cwd: DIR, env: { ...process.env, WA_BRIDGE_TOKEN: token, PORT: String(PORT) } });
+    const child = run(process.execPath, ["server.mjs"], { cwd: DIR, env: { ...process.env, WA_BRIDGE_TOKEN: token, PORT: String(PORT), WA_AUTH_DIR: path.join(DATA_DIR, "auth") } });
     g.__waBridge = child;
     // Crashed or killed? Bring it back, so WhatsApp doesn't silently stop working mid-wedding.
     child.on("exit", () => !quitting && setTimeout(async () => !(await alive(token)) && launch(), 3000));

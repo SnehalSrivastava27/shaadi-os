@@ -8,7 +8,7 @@ import QRCode from "qrcode";
 
 const TOKEN = process.env.WA_BRIDGE_TOKEN;
 const PORT = Number(process.env.PORT ?? 8790);
-const AUTH_DIR = new URL("./auth/", import.meta.url).pathname;
+const AUTH_DIR = process.env.WA_AUTH_DIR || new URL("./auth/", import.meta.url).pathname; // a volume on Fly.io
 const MAX_INBOX = 100;
 const MAX_TEXT = 2000;
 // Group mode: anyone in this WhatsApp group can post kaam and claim it. Owner creates the group in WhatsApp.
@@ -39,7 +39,7 @@ function note(k, why) {
 const locations = new Map(); // sender jid -> { lat, lng, ts, live, name, phone }: latest shared (live) location
 const groupMembers = new Set(); // jids seen posting in the group: the only ones we may @mention
 
-const GROUP_FILE = new URL("./auth/group.json", import.meta.url); // remembered so restarts don't depend on a slow lookup
+const GROUP_FILE = `${AUTH_DIR.replace(/\/$/, "")}/group.json`; // remembered so restarts don't depend on a slow lookup
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(`timed out after ${ms / 1000}s`)), ms))]);
 
 async function useGroup(jid, name) {

@@ -1,0 +1,28 @@
+# fly.io config for Shaadi OS. Deploy: fly launch --no-deploy --copy-config, then fly deploy (see DEPLOY.md).
+app = "shaadi-os"
+primary_region = "bom" # Mumbai
+
+[build]
+
+[env]
+  NODE_ENV = "production"
+  WA_BRIDGE_AUTOSTART = "1" # run the WhatsApp bridge next to the app
+  WA_DATA_DIR = "/data/wa"  # WhatsApp login + bridge token on the volume, survives deploys
+
+[[mounts]]
+  source = "shaadi_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # The WhatsApp bridge holds a live connection and in-memory state (NudgeBee incidents, runbook queue):
+  # keep exactly one machine running, never auto-stop it.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1

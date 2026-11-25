@@ -1,0 +1,10 @@
+node_modules
+wa-bridge/node_modules
+wa-bridge/auth
+wa-bridge/.token
+.next
+.next-*
+.env*
+!.env.example
+.git
+*.log
