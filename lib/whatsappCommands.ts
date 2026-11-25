@@ -24,7 +24,17 @@ export const WA_HELP = [
   "Places: Charbagh/station, airport, Gomti Nagar, Chappan Bhog/sweets, home",
 ].join("\n");
 
-export type WaCommand = { kind: "help" } | { kind: "task"; input: NewTaskInput };
+export const WA_GROUP_HELP = [
+  'Post a task in this group, e.g. "Pick up Bua ji from Charbagh at 3pm".',
+  "Take it: *take 7*  ·  Finished: *done 7*  ·  Open tasks: *list*",
+].join("\n");
+
+export type WaCommand =
+  | { kind: "help" }
+  | { kind: "list" }
+  | { kind: "claim"; no: number }
+  | { kind: "done"; no: number }
+  | { kind: "task"; input: NewTaskInput };
 
 function istParts(ms: number) {
   const d = new Date(ms + 5.5 * 3600_000); // shift so UTC getters read IST
@@ -52,6 +62,12 @@ export function parseWaCommand(raw: string, now = Date.now()): WaCommand {
   const text = raw.trim();
   let s = text.toLowerCase();
   if (!s || /^(help|madad|\?|hi|hello)\b/.test(s)) return { kind: "help" };
+  if (/^(list|kaam|tasks?)$/.test(s)) return { kind: "list" };
+  // "take 7", "le 7", "main #7" -> claim; "done 7", "ho gaya 7" -> complete.
+  const claim = s.match(/^(?:take|claim|le|lena|main|mai|me)\s*#?(\d{1,4})$/);
+  if (claim) return { kind: "claim", no: Number(claim[1]) };
+  const done = s.match(/^(?:done|ho\s*gaya|hogaya|complete|finished)\s*#?(\d{1,4})$/);
+  if (done) return { kind: "done", no: Number(done[1]) };
 
   // Find places with position and what follows them ("se"/"from" = from, "chhod"/"drop" = to).
   const found: { key: PlaceKey; at: number; after: string }[] = [];

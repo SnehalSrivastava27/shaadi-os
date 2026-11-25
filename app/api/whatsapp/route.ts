@@ -8,5 +8,5 @@ export async function GET() {
   if (!waConfig()) return NextResponse.json({ state: "off" });
   const { status, data } = await callWa("/health", { timeoutMs: 4000 });
   if (status !== 200) return NextResponse.json({ state: "off", error: data.error ?? "Bridge offline" });
-  return NextResponse.json({ state: data.state, qr: data.qr, me: data.me });
+  return NextResponse.json({ state: data.state, qr: data.qr, me: data.me, group: data.group, groupName: data.groupName });
 }

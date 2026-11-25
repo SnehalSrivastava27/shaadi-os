@@ -2,23 +2,124 @@
 
 import { useEffect } from "react";
 import { useShaadiStore } from "@/stores/useShaadiStore";
-import { parseWaCommand, WA_HELP } from "@/lib/whatsappCommands";
+import { parseWaCommand, WA_GROUP_HELP, WA_HELP } from "@/lib/whatsappCommands";
+import type { Task } from "@/types";
+import type { NewTaskInput } from "@/stores/useShaadiStore";
 
 const LAST_SEEN_KEY = "shaadi-os:wa-last-seen";
+const POSTERS_KEY = "shaadi-os:wa-posters"; // taskId -> who asked, so we can tag them later
 
-function handle(text: string): string {
+type Sender = { phone: string | null; jid?: string; name: string };
+type WaMessage = { id: string; text: string; ts: number; from?: "self" | "group"; sender?: Sender };
+type Out = { text: string; to: "self" | "group"; mentions?: string[] };
+
+// ponytail: task number = position in the task list, stable while tasks are only appended. Reset demo renumbers.
+const taskNo = (id: string) => useShaadiStore.getState().tasks.findIndex((t) => t.id === id) + 1;
+const byNo = (no: number): Task | undefined => useShaadiStore.getState().tasks[no - 1];
+const fmtWhen = (time: string) =>
+  new Date(time).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+const people = (n: number) => `${n} ${n === 1 ? "person" : "people"}`;
+const route = (t: Task) => `${t.waypoints[0].label} → ${t.waypoints.at(-1)!.label}`;
+
+/** "@9198..." in the text + the jid in mentions = WhatsApp shows a real tag. Falls back to the plain name. */
+const tag = (p: Sender | undefined, mentions: string[]) => {
+  if (!p?.jid) return p?.name ?? "";
+  mentions.push(p.jid);
+  return `@${p.jid.split("@")[0]}`;
+};
+
+function posters(): Record<string, Sender> {
+  try {
+    return JSON.parse(localStorage.getItem(POSTERS_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+function rememberPoster(taskId: string, who: Sender) {
+  const all = Object.entries({ ...posters(), [taskId]: who }).slice(-200);
+  localStorage.setItem(POSTERS_KEY, JSON.stringify(Object.fromEntries(all)));
+}
+
+function jobOut(t: Task, poster: Sender): Out {
+  const no = taskNo(t.id);
+  const mentions: string[] = [];
+  const by = poster.jid ? ` (${tag(poster, mentions)})` : "";
+  return {
+    to: "group",
+    mentions,
+    text: `🆕 Kaam #${no}${by}: ${t.title}\n${route(t)}, ${fmtWhen(t.time)}, ${people(t.peopleCount)}\nWho will take it? Reply: *take ${no}*`,
+  };
+}
+
+/** Creates the task and posts it to the group; nobody is auto-assigned, a helper must claim it there. */
+function postJob(input: NewTaskInput, poster: Sender): Out {
+  const id = useShaadiStore.getState().createTask(input);
+  rememberPoster(id, poster);
+  return jobOut(useShaadiStore.getState().tasks.find((t) => t.id === id)!, poster);
+}
+
+/** Dashboard: posts an existing task to the WhatsApp group. false = no group connected, caller should auto-assign. */
+export async function sendTaskToGroup(taskId: string): Promise<boolean> {
+  const task = useShaadiStore.getState().tasks.find((t) => t.id === taskId);
+  if (!task) return false;
+  try {
+    const st = await (await fetch("/api/whatsapp", { cache: "no-store" })).json();
+    if (st.state !== "open" || !st.group) return false;
+    const res = await fetch("/api/whatsapp/send", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(jobOut(task, { phone: null, name: "Organizer" })),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Self-chat: with a group, the job goes to the group for helpers to claim; without one, auto-assign as before. */
+function handleSelf(text: string, hasGroup: boolean): Out[] {
   const cmd = parseWaCommand(text);
-  if (cmd.kind === "help") return WA_HELP;
+  if (cmd.kind !== "task") return [{ to: "self", text: hasGroup ? WA_GROUP_HELP : WA_HELP }];
+  if (hasGroup) {
+    const job = postJob(cmd.input, { phone: null, name: "Organizer" });
+    return [job, { to: "self", text: `📣 Posted to the group: ${job.text.split("\n")[0].replace("🆕 ", "")}. Whoever takes it gets tagged there.` }];
+  }
   const s = useShaadiStore.getState();
   const { title, pickup, drop, time, peopleCount } = cmd.input;
   const r = s.dispatchTask(s.createTask(cmd.input));
-  const when = new Date(time).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
-  const head = `✅ Task created: ${title}\n${pickup.label} → ${drop.label}, ${when}, ${peopleCount} ${peopleCount === 1 ? "person" : "people"}`;
-  if (r?.ok) return `${head}\n🚗 ${r.helper.name}${r.vehicle ? ` (${r.vehicle.name})` : ""}: offer sent`;
-  return `${head}\n⚠️ No one is free. ${r && !r.ok ? r.message : ""} Book an Uber/Rapido in the app.`;
+  const head = `✅ Task created: ${title}\n${pickup.label} → ${drop.label}, ${fmtWhen(time)}, ${people(peopleCount)}`;
+  if (r?.ok) return [{ to: "self", text: `${head}\n🚗 ${r.helper.name}${r.vehicle ? ` (${r.vehicle.name})` : ""}: offer sent` }];
+  return [{ to: "self", text: `${head}\n⚠️ No one is free. ${r && !r.ok ? r.message : ""} Book an Uber/Rapido in the app.` }];
 }
 
-/** Polls the WhatsApp bridge inbox, turns each self-chat message into a task and replies. Renders nothing. */
+/** Group: anyone posts kaam, first "le N" takes it (and gets tagged), "done N" closes it. Quiet on chit-chat. */
+function handleGroup(text: string, sender: Sender): Out[] {
+  const cmd = parseWaCommand(text);
+  const s = useShaadiStore.getState();
+  const reply = (t: string, mentions?: string[]): Out[] => [{ to: "group", text: t, mentions }];
+  if (cmd.kind === "help") return /^(help|madad|\?)$/i.test(text.trim()) ? reply(WA_GROUP_HELP) : [];
+  if (cmd.kind === "list") {
+    const open = s.tasks.filter((t) => ["created", "declined"].includes(t.status));
+    return reply(open.length ? `Open tasks:\n${open.map((t) => `#${taskNo(t.id)} ${t.title} (${fmtWhen(t.time)})`).join("\n")}\nTo take one: *take <number>*` : "No open tasks right now 🎉");
+  }
+  if (cmd.kind === "claim" || cmd.kind === "done") {
+    const t = byNo(cmd.no);
+    if (!t) return reply(`There is no task #${cmd.no}.`);
+    const m: string[] = [];
+    const poster = posters()[t.id];
+    const asker = poster?.jid && poster.jid !== sender.jid ? ` ${tag(poster, m)}` : "";
+    if (cmd.kind === "claim") {
+      const r = s.claimTask(t.id, sender);
+      if (!r.ok) return reply(`${tag(sender, m)} #${cmd.no}: ${r.error}`, m);
+      return reply(`🙌 #${cmd.no} ${tag(sender, m)} took it: ${t.title}\n${route(t)}, ${fmtWhen(t.time)}.${asker ? `\n${asker.trim()} your task is on its way.` : ""}\nWhen finished: *done ${cmd.no}*`, m);
+    }
+    const r = s.completeTask(t.id, sender.name);
+    return reply(r.ok ? `✅ #${cmd.no} done: ${t.title}. Thank you ${tag(sender, m)}!${asker}` : `#${cmd.no}: ${r.error}`, m);
+  }
+  return [postJob(cmd.input, sender)];
+}
+
+/** Polls the WhatsApp bridge inbox. With a group, every job is posted there and helpers claim it (they get @tagged). Renders nothing. */
 export function WhatsAppAgent() {
   useEffect(() => {
     let stopped = false;
@@ -38,14 +139,13 @@ export function WhatsAppAgent() {
           delay = res.status === 503 ? 60_000 : 15_000; // not configured / bridge down
           return;
         }
-        const { messages } = (await res.json()) as { messages: { id: string; text: string; ts: number }[] };
+        const { messages, hasGroup } = (await res.json()) as { messages: WaMessage[]; hasGroup?: boolean };
         for (const m of messages) {
           localStorage.setItem(LAST_SEEN_KEY, String(m.ts)); // mark before acting: a reload never recreates the task
-          await fetch("/api/whatsapp/send", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ text: handle(m.text) }),
-          });
+          const outs = m.from === "group" ? handleGroup(m.text, m.sender ?? { phone: null, name: "Guest" }) : handleSelf(m.text, !!hasGroup);
+          for (const out of outs) {
+            await fetch("/api/whatsapp/send", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(out) });
+          }
         }
       };
       try {

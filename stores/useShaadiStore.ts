@@ -92,6 +92,8 @@ interface Actions {
   createTask(input: NewTaskInput): string;
   dispatchTask(taskId: string, opts?: { excludeHelperIds?: string[]; silentFallback?: boolean }): AssignResult | null;
   acceptTask(taskId: string): ActionResult;
+  /** WhatsApp group: whoever claims first gets the task. Unknown numbers join as helpers. */
+  claimTask(taskId: string, who: { name: string; phone: string | null }): ActionResult;
   declineTask(taskId: string): AssignResult | null;
   completeTask(taskId: string, actor?: string): ActionResult;
   cancelTask(taskId: string): ActionResult;
@@ -271,6 +273,29 @@ export const useShaadiStore = create<ShaadiState>()(
         }));
         get().addTimeline(`${helper.name} accepted: ${task.title}`, taskId);
         return { ok: true };
+      },
+
+      claimTask(taskId, who) {
+        const s = get();
+        const task = s.tasks.find((t) => t.id === taskId);
+        if (!task) return { ok: false, error: "Task nahi mila" };
+        if (!canTransition(task.status, "accepted") && !canTransition(task.status, "offered")) {
+          const by = s.helpers.find((h) => h.id === task.assignedHelperId)?.name;
+          return { ok: false, error: by ? `${by} already took it` : `Task is ${task.status}` };
+        }
+        const last10 = (p: string | null) => (p ?? "").replace(/\D/g, "").slice(-10);
+        const phone = last10(who.phone);
+        let helper = phone ? s.helpers.find((h) => last10(h.phone) === phone) : s.helpers.find((h) => h.name === who.name);
+        if (helper?.status === "busy") return { ok: false, error: `${helper.name}, you are already on a task` };
+        if (!helper) {
+          helper = { id: uid("h"), name: who.name, relation: "WhatsApp group", phone: who.phone ? `+${who.phone}` : "", availability: "online", status: "free", locationSharing: false };
+          set((st) => ({ helpers: [...st.helpers, helper!] }));
+        }
+        const h = helper;
+        set((st) => ({
+          tasks: mapTask(st.tasks, taskId, (t) => ({ ...t, status: "offered", assignedHelperId: h.id, assignedVehicleId: undefined, activity: [...t.activity, act(h.name, "Claimed on WhatsApp")] })),
+        }));
+        return get().acceptTask(taskId);
       },
 
       declineTask(taskId) {

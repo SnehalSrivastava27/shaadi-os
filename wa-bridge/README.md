@@ -33,11 +33,21 @@ npm start                                         # PORT=8790 by default, binds 
    ```
    Restart `npm run dev`, keep a Shaadi OS dashboard tab open (it polls every ~5 s and does the work).
 
+### Group mode (anyone can post and take kaam)
+
+1. In WhatsApp (linked number), create a group named **Shaadi OS** (or set `WA_GROUP_NAME`). You must be admin.
+2. Settings → WhatsApp connect now shows a **join QR**. Family/helpers scan it to join.
+3. In the group: someone posts `Bua ji ko charbagh se laana hai 3 baje` → bot replies `🆕 Kaam #7 … Reply: le 7`.
+4. First person to send `le 7` gets it (new numbers are added as helpers). `done 7` closes it, `list` shows open kaam.
+5. The bot **@tags** whoever took it (and whoever asked). Once the group exists, kaam you send from "Message yourself"
+   is also posted to the group instead of being auto-assigned, so helpers only pick up kaam in the group.
+
 The session is saved in `wa-bridge/auth/` (git-ignored). Logged out? Delete `auth/` and start again.
 
 ## Security
 
-- Only messages **you** send in your own "Message yourself" chat are read. Other people, groups and status are ignored.
+- Read: your own "Message yourself" chat, plus every member's messages in the one group named `WA_GROUP_NAME`. All other chats, groups and status are ignored.
+- Replies go only to your self-chat or that group, never to arbitrary numbers.
 - Messages stay in memory (last 100), nothing is written to disk except the login session.
 - Every request needs the `x-bridge-token` header. The bridge refuses to start without a token.
 

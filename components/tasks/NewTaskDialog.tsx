@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PickerMap } from "@/components/map";
+import { sendTaskToGroup } from "@/components/whatsapp/WhatsAppAgent";
 import { useShaadiStore } from "@/stores/useShaadiStore";
 import { getSavedPlaces } from "@/lib/data";
 import { searchPlaces, type PlaceHit } from "@/lib/geo";
@@ -146,7 +147,7 @@ export function NewTaskDialog({
   const dropLabel = useWatch({ control: form.control, name: "dropLabel" });
   const type = useWatch({ control: form.control, name: "type" });
 
-  const onSubmit = (v: NewTaskValues) => {
+  const onSubmit = async (v: NewTaskValues) => {
     const pickupPlace = places.find((p) => p.id === v.pickupPlaceId);
     const dropPlace = places.find((p) => p.id === v.dropPlaceId) ?? places[0];
     const pickup =
@@ -168,6 +169,11 @@ export function NewTaskDialog({
     });
     toast.success("Task created", { description: v.title });
     onOpenChange(false);
+    // WhatsApp group connected? Helpers pick it up there (they get tagged); otherwise auto-assign as before.
+    if (await sendTaskToGroup(id)) {
+      toast.success("Posted to the WhatsApp group", { description: 'First helper to reply "take <number>" gets it' });
+      return;
+    }
     if (v.autoAssign) {
       const r = dispatchTask(id);
       if (r?.ok) toast.success(`Offer sent to ${r.helper.name}`, { description: r.vehicle ? `${r.vehicle.name} · ${r.vehicle.plateNumber}` : undefined });

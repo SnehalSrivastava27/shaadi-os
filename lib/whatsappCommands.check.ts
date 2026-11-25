@@ -62,3 +62,12 @@ assert.equal(parseWaCommand("help").kind, "help");
 assert.equal(parseWaCommand("kya haal hai").kind, "help");
 assert.equal(parseWaCommand("ghar aa jao").kind, "help");
 console.log("whatsappCommands: all checks passed");
+
+// Group commands
+assert.deepEqual(parseWaCommand("le 7", NOW), { kind: "claim", no: 7 });
+assert.deepEqual(parseWaCommand("Main #12", NOW), { kind: "claim", no: 12 });
+assert.deepEqual(parseWaCommand("ho gaya 3", NOW), { kind: "done", no: 3 });
+assert.deepEqual(parseWaCommand("take 7", NOW), { kind: "claim", no: 7 });
+assert.deepEqual(parseWaCommand("list", NOW), { kind: "list" });
+assert.equal(parseWaCommand("le lenge kal", NOW).kind, "help");
+console.log("group commands ok");
