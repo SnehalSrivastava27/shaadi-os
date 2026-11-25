@@ -15,6 +15,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { PageHeader } from "@/components/PageHeader";
 import { WhatsAppCard } from "@/components/whatsapp/WhatsAppCard";
 import { FeatureFlagsCard } from "@/components/flags/FeatureFlagsCard";
+import { NudgeBeeCard } from "@/components/ops/NudgeBeeCard";
 import { useShaadiStore } from "@/stores/useShaadiStore";
 import { initials } from "@/lib/utils";
 
@@ -134,6 +135,7 @@ export function SettingsView() {
 
         <WhatsAppCard />
         <FeatureFlagsCard />
+        <NudgeBeeCard />
 
         <Card>
           <CardHeader>

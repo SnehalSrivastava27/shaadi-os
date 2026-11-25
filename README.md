@@ -43,15 +43,17 @@ For a fresh project you would run `npx shadcn@latest init` first. The components
 | `LLM_MODEL` | Optional model override. Defaults: `gemini-2.5-flash`, `gpt-4o-mini`, `claude-sonnet-5-5`. |
 | `SARVAM_API_KEY` | Sarvam AI: WhatsApp voice notes, any-language understanding, native-language replies, invite in 22 languages. See [SARVAM.md](SARVAM.md). |
 | `FLAGSMITH_ENVIRONMENT_KEY` | Flagsmith client-side environment key: live feature switches + landing page A/B test. See [FLAGSMITH.md](FLAGSMITH.md). |
+| `NUDGEBEE_EVENT_WEBHOOK_URL` | NudgeBee Event Webhook URL: wedding-day incidents are reported there. See [NUDGEBEE.md](NUDGEBEE.md). |
+| `NUDGEBEE_ACTION_TOKEN` | Bearer token NudgeBee runbooks use to call `/api/ops/remediate` (`openssl rand -hex 24`). |
 | `WA_BRIDGE_AUTOSTART` | Set to `0` to stop `npm run dev` from starting the WhatsApp bridge itself. |
 
 **No key? No problem.** The invite builder falls back to an offline rule-based parser, so the demo always works. The chat header shows whether you are in `AI: <provider>` or `Offline mode`.
 
 ---
 
-## Sarvam AI + Flagsmith: how they are linked and used
+## Sarvam AI + Flagsmith + NudgeBee: how they are linked and used
 
-Two partner products run the WhatsApp side of Shaadi OS. **Sarvam** understands the family, and **Flagsmith** decides which of those features are on.
+Three partner products run the WhatsApp side of Shaadi OS. **Sarvam** understands the family, **Flagsmith** decides which features are on, and **NudgeBee** is the on-call engineer when something breaks on the wedding day.
 
 ```
 WhatsApp group ─► wa-bridge ─► dashboard tab (WhatsAppAgent)
@@ -63,11 +65,15 @@ WhatsApp group ─► wa-bridge ─► dashboard tab (WhatsAppAgent)
 Guest invite ─► Sarvam translate ─► 22 Indian languages                                                [invite_translation]
 Fallback dialog ─► real Uber/Rapido via phone bridge                                                   [real_rides]
 /welcome ─► Flagsmith identity per visitor ─► headline variant (A/B)                                   [landing_headline]
+
+Any failure (bridge down, Sarvam/Flagsmith errors, ride bridge, pickup unclaimed 15 min before) ─► NudgeBee Event Webhook
+   ─► AI investigation ─► approval-gated runbook ─► POST /api/ops/remediate (auto_assign · repost_to_group · restart_whatsapp_bridge)
 ```
 
 ### How they are linked
 - **Sarvam:** one server-side client, `lib/sarvam.ts`, with the key in `SARVAM_API_KEY` (`.env.local`, never sent to the browser). It calls Sarvam's REST API directly: `/speech-to-text` (saaras:v4, mode `translate`), `/v1/chat/completions` (sarvam-105b), `/translate` (sarvam-translate:v1), `/text-lid`, `/text-to-speech` (bulbul:v3, mp3).
 - **Flagsmith:** one server-side client, `lib/flags.ts`, that calls the Edge REST API (`/flags/`, `/identities/`) directly, with no SDK. The key is the project's client-side environment key in `FLAGSMITH_ENVIRONMENT_KEY`.
+- **NudgeBee:** one server-side client, `lib/nudgebee.ts`, that posts `firing`/`resolved` events to NudgeBee's **Event Webhook** (`NUDGEBEE_EVENT_WEBHOOK_URL`, Bearer token). Each problem is sent once and resolved once. Runbooks call back to `/api/ops/remediate` with `NUDGEBEE_ACTION_TOKEN`.
 - **Safe defaults:** with no key, with Flagsmith unreachable, or with a flag missing, every feature defaults to on. With no Sarvam key, the bot falls back to the offline rule parser and English replies. The app never breaks because a partner API is down.
 
 ### How they are used
@@ -82,7 +88,15 @@ Fallback dialog ─► real Uber/Rapido via phone bridge                        
 | `app/welcome/page.tsx` + `proxy.ts` | – | `landing_headline` (multivariate A/B test, stable visitor id cookie) |
 | Settings → **Feature flags** card | Shows whether Sarvam is configured | Live state of every flag, polled every 5 s |
 
-Full write-ups: **[SARVAM.md](SARVAM.md)** (problems we hit and how we solved them) and **[FLAGSMITH.md](FLAGSMITH.md)** (setup, flags, A/B test, the live-flip demo).
+| Where | NudgeBee |
+|---|---|
+| `app/api/whatsapp`, `app/api/whatsapp/inbox` | `wa-bridge:unreachable` (critical), `wa-bridge:logged-out` (high) |
+| `lib/sarvam.ts`, `lib/flags.ts`, `app/api/rides/*` | Sarvam errors, Flagsmith unreachable, ride bridge errors |
+| `app/api/ops` (dashboard tick) | **Pickup unclaimed 15 min before its time**: a business incident |
+| `app/api/ops/remediate` | Approved runbook actions: `auto_assign`, `repost_to_group`, `restart_whatsapp_bridge` |
+| Settings → **NudgeBee ops** card | Open incidents, last delivery error |
+
+Full write-ups: **[SARVAM.md](SARVAM.md)** (problems we hit and how we solved them), **[FLAGSMITH.md](FLAGSMITH.md)** (setup, flags, A/B test, the live-flip demo) and **[NUDGEBEE.md](NUDGEBEE.md)** (incidents, runbooks, setup, demo).
 
 ---
 

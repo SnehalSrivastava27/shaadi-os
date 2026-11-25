@@ -1,5 +1,6 @@
 // Server-only Sarvam AI client (https://docs.sarvam.ai). One key: SARVAM_API_KEY.
 import "server-only";
+import { health } from "@/lib/nudgebee";
 
 const BASE = "https://api.sarvam.ai";
 
@@ -43,6 +44,15 @@ async function call<T>(path: string, init: { json?: unknown; form?: FormData; ti
     cache: "no-store",
   });
   const data = await res.json().catch(() => ({}));
+  const inc = {
+    fingerprint: `sarvam:${path}`,
+    title: `Sarvam ${path} is failing: voice notes / translation / understanding degraded`,
+    rule_name: "sarvam_api_error",
+    severity: res.status === 401 || res.status === 403 || res.status === 429 ? ("critical" as const) : ("high" as const),
+    description: `HTTP ${res.status}: ${data?.error?.message ?? "no message"}. The bot falls back to the rule parser and English replies.`,
+    subject: { name: `api.sarvam.ai${path}`, type: "external-api" },
+  };
+  health(!res.ok, inc);
   if (!res.ok) throw new Error(data?.error?.message ?? `Sarvam ${path} failed (${res.status})`);
   return data as T;
 }

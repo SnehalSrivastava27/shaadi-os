@@ -157,6 +157,31 @@ async function understand(m: WaMessage): Promise<{ cmd: WaCommand; text: string;
   return { cmd, text, lang, voice: !!m.audio };
 }
 
+/** NudgeBee: report unclaimed tasks (SLA check runs server-side) and run runbook actions a human approved there. */
+async function syncOps() {
+  const s = useShaadiStore.getState();
+  const tasks = s.tasks
+    .filter((t) => !["completed", "canceled"].includes(t.status))
+    .slice(-200)
+    .map((t) => ({ id: t.id, no: taskNo(t.id), title: t.title.slice(0, 120), from: t.waypoints[0].label.slice(0, 120), to: t.waypoints.at(-1)!.label.slice(0, 120), time: t.time, status: t.status }));
+  await post("/api/ops", { tasks });
+  const { actions = [] } = await (await post("/api/ops/actions", {})).json().catch(() => ({}));
+  for (const a of actions as { action: string; taskId?: string; by: string }[]) {
+    const t = useShaadiStore.getState().tasks.find((x) => x.id === a.taskId);
+    if (!t) continue;
+    if (a.action === "auto_assign") {
+      const r = useShaadiStore.getState().dispatchTask(t.id);
+      useShaadiStore.getState().addTimeline(`NudgeBee runbook (approved by ${a.by}): auto-assign #${taskNo(t.id)} → ${r?.ok ? r.helper.name : "no free helper"}`, t.id);
+      await post("/api/whatsapp/send", { to: "group", text: r?.ok ? `🛟 #${taskNo(t.id)} was unclaimed, so it went to ${r.helper.name}: ${t.title}` : `🚨 #${taskNo(t.id)} still unclaimed and nobody is free: ${t.title}. Please book a cab in the app.` });
+    }
+    if (a.action === "repost_to_group") {
+      const job = jobOut(t, { phone: null, name: "Organizer" });
+      useShaadiStore.getState().addTimeline(`NudgeBee runbook (approved by ${a.by}): reposted #${taskNo(t.id)} to the group`, t.id);
+      await post("/api/whatsapp/send", { ...job, text: `⏰ Still needed! ${job.text}` });
+    }
+  }
+}
+
 /** Live locations shared in WhatsApp -> helper dots on the map, everyone at once. */
 async function syncLocations() {
   const since = Number(localStorage.getItem(LOC_SEEN_KEY)) || 0;
@@ -203,6 +228,7 @@ export function WhatsAppAgent() {
       };
       try {
         await syncLocations();
+        await syncOps().catch(() => {});
         await (navigator.locks ? navigator.locks.request("shaadi-os-wa-inbox", run) : run());
       } catch {
         delay = 15_000;

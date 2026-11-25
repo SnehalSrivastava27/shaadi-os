@@ -1,6 +1,7 @@
 // Server-only Flagsmith client over the public Edge REST API (no SDK).
 // Not configured (no FLAGSMITH_ENVIRONMENT_KEY) or flag missing in Flagsmith -> the default below, so the app works as before.
 import "server-only";
+import { health } from "@/lib/nudgebee";
 
 export const FLAG_DEFAULTS = {
   whatsapp_group_mode: true, // tasks go to the WhatsApp group, helpers claim them
@@ -15,6 +16,14 @@ export type Flags = Record<FlagName, boolean>;
 
 type ApiFlag = { feature: { name: string }; enabled: boolean; feature_state_value: string | number | boolean | null };
 const API = "https://edge.api.flagsmith.com/api/v1";
+const flagsmithDown = (why: string) => ({
+  fingerprint: "flagsmith:unreachable",
+  title: "Flagsmith unreachable: feature flags fell back to defaults",
+  rule_name: "flagsmith_unreachable",
+  severity: "low" as const,
+  description: `${why}. All features run with their default (on) values until Flagsmith answers again.`,
+  subject: { name: "edge.api.flagsmith.com", type: "external-api" },
+});
 const CACHE_MS = 5_000; // short, so a flip in Flagsmith shows up on stage within seconds
 let cache: { at: number; flags: ApiFlag[] } | null = null;
 
@@ -25,10 +34,12 @@ async function fetchFlags(path: string): Promise<ApiFlag[] | null> {
   if (!key) return null;
   try {
     const res = await fetch(`${API}${path}`, { headers: { "X-Environment-Key": key }, signal: AbortSignal.timeout(3000), cache: "no-store" });
+    health(!res.ok, flagsmithDown(`HTTP ${res.status}`));
     if (!res.ok) return null;
     const data = await res.json();
     return Array.isArray(data) ? data : (data.flags ?? null);
-  } catch {
+  } catch (e) {
+    health(true, flagsmithDown(e instanceof Error ? e.message : String(e)));
     return null; // Flagsmith down -> defaults, never break the app
   }
 }
