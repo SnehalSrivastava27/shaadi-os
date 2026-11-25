@@ -12,6 +12,7 @@ export function applyPatch(config: WeddingConfig, patch: ConfigPatch): MergeResu
     ...(patch.city !== undefined && { city: patch.city }),
     ...(patch.theme !== undefined && { theme: patch.theme }),
     ...(patch.showHindi !== undefined && { showHindi: patch.showHindi }),
+    ...(patch.story !== undefined && { story: patch.story }),
     palette: { ...config.palette, ...stripUndefined(patch.palette ?? {}) },
     welcomeMessage: { ...config.welcomeMessage, ...stripUndefined(patch.welcomeMessage ?? {}) },
     functions: config.functions,

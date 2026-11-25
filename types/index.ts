@@ -1,6 +1,6 @@
 // Shaadi OS domain model. Everything in the app reads from these types.
 
-export type Theme = "rajasthani" | "punjabi" | "south-indian" | "bengali" | "modern";
+export type Theme = "mandap" | "rajasthani" | "punjabi" | "south-indian" | "bengali" | "modern";
 
 export interface Palette {
   primary: string;
@@ -32,6 +32,23 @@ export interface WeddingConfig {
   published: boolean;
   /** Show the Hindi welcome alongside English on the invite. */
   showHindi?: boolean;
+  /** The couple's journey, told chapter by chapter as guests scroll. Undefined = default chapters. */
+  story?: StoryChapter[];
+}
+
+export type StoryScene = "chai" | "rings" | "haldi" | "mehendi";
+
+export interface StoryChapter {
+  id: string;
+  title: string;
+  caption: string;
+  date?: string;
+  /** Key into the photo store (photos live outside the versioned config). */
+  photoId?: string;
+  /** Built-in default photo under /public/story (used when there is no uploaded photo). */
+  photoUrl?: string;
+  /** Illustration shown when there is no photo. */
+  scene: StoryScene;
 }
 
 export interface ConfigVersion {

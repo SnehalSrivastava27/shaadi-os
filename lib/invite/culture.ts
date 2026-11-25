@@ -23,7 +23,7 @@ export const FUNCTION_CATALOG: FunctionPreset[] = [
     dayOffset: -3,
     time: "12:00",
     dressCode: "Pastel ethnic",
-    description: "Dono parivaar milkar rishta pakka karte hain: the official 'yes' between the two families.",
+    description: "The two families formally seal the match: the official 'yes' between them.",
   },
   {
     key: "tilak",
@@ -52,7 +52,7 @@ export const FUNCTION_CATALOG: FunctionPreset[] = [
     keywords: ["haldi", "haldhi", "pithi", "ubtan"],
     dayOffset: -2,
     time: "10:00",
-    dressCode: "Yellow, purane kapde chalenge!",
+    dressCode: "Yellow; old clothes are fine!",
     description: "Turmeric paste is applied to the bride and groom for glow and good luck. Expect to get messy.",
   },
   {
@@ -181,6 +181,17 @@ export interface ThemePreset {
 }
 
 export const THEME_PRESETS: Record<Theme, ThemePreset> = {
+  mandap: {
+    theme: "mandap",
+    label: "Haldi Mandap",
+    keywords: ["mandap", "peela", "yellow", "genda", "marigold", "traditional", "paramparik"],
+    palette: { primary: "#3F5212", accent: "#C9962B", background: "#FBF1D3" },
+    typicalFunctions: ["haldi", "mehendi", "sangeet", "wedding", "reception"],
+    welcomeMessage: {
+      en: "With the blessings of Lord Ganesha and our elders, we joyfully invite you and your family to the wedding celebrations.",
+      hi: "श्री गणेश और बड़ों के आशीर्वाद से, शुभ विवाह के पावन अवसर पर आप सपरिवार सादर आमंत्रित हैं।",
+    },
+  },
   rajasthani: {
     theme: "rajasthani",
     label: "Rajasthani",
@@ -199,7 +210,7 @@ export const THEME_PRESETS: Record<Theme, ThemePreset> = {
     palette: { primary: "#B0154B", accent: "#FF8A00", background: "#FFF6EE" },
     typicalFunctions: ["chooda", "jaago", "mehendi", "sangeet", "anand-karaj", "reception"],
     welcomeMessage: {
-      en: "Rab di mehar naal, we invite you to dance, feast and bless the couple. Balle balle!",
+      en: "By God's grace, we invite you to dance, feast and bless the couple. Balle balle!",
       hi: "वाहेगुरु की कृपा से, आप सपरिवार सादर आमंत्रित हैं।",
     },
   },

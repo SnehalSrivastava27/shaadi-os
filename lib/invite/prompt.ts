@@ -5,13 +5,13 @@ Respond with ONE JSON object and nothing else (no markdown, no code fences):
 {
   "patch": { ...only the fields that change... },
   "summary": "one-line change summary in English, max 60 chars",
-  "reply": "short friendly reply in Hinglish, max 2 sentences"
+  "reply": "short friendly reply in English, max 2 sentences"
 }
 
 WeddingConfig shape:
 {
   "brideName": string, "groomName": string, "city": string,
-  "theme": "rajasthani" | "punjabi" | "south-indian" | "bengali" | "modern",
+  "theme": "mandap" | "rajasthani" | "punjabi" | "south-indian" | "bengali" | "modern",
   "palette": { "primary": "#RRGGBB", "accent": "#RRGGBB", "background": "#RRGGBB" },
   "welcomeMessage": { "en": string, "hi": string (Devanagari) },
   "showHindi": boolean,
