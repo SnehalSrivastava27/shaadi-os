@@ -1,6 +1,6 @@
 # fly.io config for Shaadi OS. Deploy: fly launch --no-deploy --copy-config, then fly deploy (see DEPLOY.md).
 app = "shaadi-os"
-primary_region = "bom" # Mumbai
+primary_region = "sin" # Singapore (closest to India; Fly retired Mumbai)
 
 [build]
 

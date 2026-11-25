@@ -1,7 +1,7 @@
 # Deploy Shaadi OS on Fly.io
 
 One always-on machine runs the Next.js app **and** the WhatsApp bridge (started by `instrumentation.ts`).
-A volume at `/data` keeps the WhatsApp login and bridge token across deploys. Region: Mumbai (`bom`).
+A volume at `/data` keeps the WhatsApp login and bridge token across deploys. Region: Singapore (`sin`), the closest to India.
 
 Why Fly and not Vercel: the bridge needs a long-lived connection and a disk, and NudgeBee incidents / runbook
 actions live in server memory. Exactly **one** machine keeps all of that consistent.
@@ -14,7 +14,7 @@ fly auth login
 
 cd ~/Desktop/repos/shaadi-os
 fly launch --no-deploy --copy-config --name <your-app-name>   # keeps fly.toml; pick a unique name
-fly volumes create shaadi_data --region bom --size 1           # WhatsApp login lives here
+fly volumes create shaadi_data --region sin --size 1           # WhatsApp login lives here
 
 fly secrets set \
   SESSION_SECRET=$(openssl rand -hex 32) \
