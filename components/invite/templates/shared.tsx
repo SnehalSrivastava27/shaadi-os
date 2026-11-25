@@ -10,8 +10,10 @@ export interface TemplateProps {
   functions: WeddingFunction[];
   lang: Lang;
   guestName?: string;
-  /** Rendered under each function card (e.g. the RSVP form on the public invite). */
+  /** Rendered under each function card. */
   renderFunctionExtra?: (f: WeddingFunction) => React.ReactNode;
+  /** One RSVP for the whole invite, asked at the very end (public invite only). */
+  renderRsvp?: () => React.ReactNode;
 }
 
 export function Greeting({ guestName, lang, className, style }: { guestName?: string; lang: Lang; className?: string; style?: React.CSSProperties }) {

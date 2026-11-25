@@ -293,7 +293,7 @@ function usePetalShower(scope: React.RefObject<HTMLElement | null>) {
 // ------------------------------------------------------------------ template
 
 /** Haldi-yellow mandap: Ganesha's blessing, marigold toran, brass bells, gold mehrab, the couple's story, one screen at a time. */
-export function MandapTemplate({ config, functions, lang, guestName, renderFunctionExtra }: TemplateProps) {
+export function MandapTemplate({ config, functions, lang, guestName, renderFunctionExtra, renderRsvp }: TemplateProps) {
   const edit = useEdit();
   const live = !edit;
   const [opened, setOpened] = useState(false);
@@ -640,6 +640,22 @@ export function MandapTemplate({ config, functions, lang, guestName, renderFunct
             ))}
           </ol>
         </section>
+      )}
+
+      {/* One RSVP for everything, asked at the very end */}
+      {renderRsvp && (
+        <Scene live={live}>
+          <Divider color={accent} />
+          <h2 data-anim className={`${caps.className} text-2xl font-semibold tracking-wider`} style={{ color: primary }}>
+            {lang === "hi" ? "क्या आप आ रहे हैं?" : "Will you be there?"}
+          </h2>
+          <p data-anim className="mt-2 mb-6 text-lg" style={{ color: MAROON }}>
+            {lang === "hi" ? "बस तीन बातें बता दीजिए।" : "Just three quick things, and you're done."}
+          </p>
+          <div data-anim className="w-full">
+            {renderRsvp()}
+          </div>
+        </Scene>
       )}
 
       {/* Closing: one last shower of petals */}

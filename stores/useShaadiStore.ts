@@ -7,6 +7,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type {
+  Arrival,
   ConfigVersion,
   CurrentUser,
   ExternalBooking,
@@ -104,7 +105,8 @@ interface Actions {
   setHelperStatus(helperId: string, status: HelperStatus): void;
   setAllHelpersBusy(): void;
 
-  submitRsvp(guestId: string, rsvps: Rsvp[]): void;
+  /** `arrival`: set it to plan a pickup, `null` to clear (coming by own car / not coming), omit to keep. */
+  submitRsvp(guestId: string, rsvps: Rsvp[], arrival?: Arrival | null): void;
 
   applyConfigPatch(patch: ConfigPatch, summary: string): MergeResult;
   restoreVersion(versionId: string): void;
@@ -474,12 +476,13 @@ export const useShaadiStore = create<ShaadiState>()(
 
       // ---------------- guests ----------------
 
-      submitRsvp(guestId, rsvps) {
+      submitRsvp(guestId, rsvps, arrival) {
         set((s) => ({
           guests: s.guests.map((g) => {
             if (g.id !== guestId) return g;
             const merged = [...g.rsvps.filter((r) => !rsvps.some((n) => n.functionId === r.functionId)), ...rsvps];
-            return { ...g, rsvps: merged };
+            if (arrival === undefined) return { ...g, rsvps: merged };
+            return { ...g, rsvps: merged, arrival: arrival ?? undefined };
           }),
         }));
         const g = get().guests.find((x) => x.id === guestId);

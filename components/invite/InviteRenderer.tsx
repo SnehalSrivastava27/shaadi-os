@@ -30,6 +30,8 @@ export function InviteRenderer({ editable = false, ...props }: TemplateProps & {
   return (
     <EditContext.Provider value={editable ? applyConfigPatch : null}>
       <Template {...props} />
+      {/* Templates without their own RSVP scene get the single RSVP appended at the end. */}
+      {props.renderRsvp && props.config.theme !== "mandap" && <div className="px-4 pb-12">{props.renderRsvp()}</div>}
     </EditContext.Provider>
   );
 }

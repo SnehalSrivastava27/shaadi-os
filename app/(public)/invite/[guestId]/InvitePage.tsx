@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Languages } from "lucide-react";
 import { useShaadiStore } from "@/stores/useShaadiStore";
 import { InviteRenderer } from "@/components/invite/InviteRenderer";
-import { RsvpForm } from "@/components/invite/RsvpForm";
+import { FinalRsvp } from "@/components/invite/FinalRsvp";
 import { functionsForGuest } from "@/lib/invite/guestFunctions";
 import type { Lang } from "@/lib/invite/i18n";
 
@@ -46,7 +46,15 @@ export function InvitePage({ guestId }: { guestId: string }) {
         functions={functions}
         lang={lang}
         guestName={guest.name}
-        renderFunctionExtra={(f) => <RsvpForm key={`${f.id}-${lang}`} guest={guest} fn={f} lang={lang} color={config.palette.primary} />}
+        renderRsvp={() => (
+          <FinalRsvp
+            key={lang}
+            guest={guest}
+            lang={lang}
+            color={config.palette.primary}
+            defaultTime={`${[...functions].sort((a, b) => a.date.localeCompare(b.date))[0]?.date ?? "2026-12-10"}T09:00`}
+          />
+        )}
       />
       <footer className="pb-8 text-center text-xs opacity-60" style={{ color: config.palette.primary }}>
         Made with ❤️ on Shaadi OS
