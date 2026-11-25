@@ -1,0 +1,198 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Shaadi OS festive theme: maroon, marigold, ivory, gold. */
+:root {
+  --radius: 0.75rem;
+  --background: #fff8ec;
+  --foreground: #2b1416;
+  --card: #fffdf8;
+  --card-foreground: #2b1416;
+  --popover: #fffdf8;
+  --popover-foreground: #2b1416;
+  --primary: #7a1f2b;
+  --primary-foreground: #fff8ec;
+  --secondary: #fbebcf;
+  --secondary-foreground: #5a1620;
+  --muted: #f6ecdb;
+  --muted-foreground: #7b6257;
+  --accent: #f4a300;
+  --accent-foreground: #3a1a05;
+  --destructive: #c0392b;
+  --border: #ead8bb;
+  --input: #e4cfae;
+  --ring: #b8860b;
+  --gold: #c9a227;
+  --gold-soft: #f3e2a9;
+  --status-free: #16a34a;
+  --status-busy: #eab308;
+  --status-unavailable: #dc2626;
+  --status-stale: #9ca3af;
+  --sidebar: #5b1520;
+  --sidebar-foreground: #fff1d6;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-playfair);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-status-free: var(--status-free);
+  --color-status-busy: var(--status-busy);
+  --color-status-unavailable: var(--status-unavailable);
+  --color-status-stale: var(--status-stale);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1,
+  h2,
+  h3,
+  .font-heading {
+    font-family: var(--font-playfair), Georgia, serif;
+  }
+}
+
+/* Subtle mandala / paisley pattern used in headers. */
+.mandala-bg {
+  background-color: var(--primary);
+  background-image:
+    radial-gradient(circle at 12px 12px, rgba(244, 163, 0, 0.35) 2px, transparent 2.5px),
+    radial-gradient(circle at 36px 36px, rgba(255, 248, 236, 0.18) 3px, transparent 3.5px),
+    repeating-radial-gradient(circle at 100% 0%, transparent 0 18px, rgba(244, 163, 0, 0.12) 18px 19px);
+  background-size: 48px 48px, 48px 48px, 100% 100%;
+}
+
+.paisley-border {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--gold) 0 10px,
+    transparent 10px 14px,
+    var(--accent) 14px 18px,
+    transparent 18px 22px
+  );
+  height: 4px;
+}
+
+/* Leaflet custom markers */
+.so-marker {
+  background: transparent;
+  border: none;
+}
+.so-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  position: relative;
+}
+.so-pin svg {
+  width: 60%;
+  height: 60%;
+}
+.so-pin-square {
+  border-radius: 8px;
+}
+.so-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 9999px;
+  border: 3px solid var(--accent);
+  animation: so-pulse 1.2s ease-out infinite;
+}
+@keyframes so-pulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+.leaflet-container {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  background: #f3ead8;
+}
+
+/* ---------- Landing page ---------- */
+@keyframes so-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+@keyframes so-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes so-spin-slow {
+  to { transform: rotate(360deg); }
+}
+@keyframes so-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes so-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.so-sway { transform-origin: top center; animation: so-sway 4s ease-in-out infinite; }
+.so-float { animation: so-float 5s ease-in-out infinite; }
+.so-spin-slow { animation: so-spin-slow 60s linear infinite; }
+.so-rise { animation: so-rise 0.8s ease-out both; }
+.so-gold-text {
+  background: linear-gradient(90deg, #f4a300, #ffe39a, #c9a227, #ffe39a, #f4a300);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: so-shimmer 6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .so-sway, .so-float, .so-spin-slow, .so-rise, .so-gold-text { animation: none; }
+}
+@keyframes so-marquee {
+  to { transform: translateX(-50%); }
+}
+.so-marquee { animation: so-marquee 45s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .so-marquee { animation: none; }
+}
+/* Landing page uses its own sans for headings (overrides the app's Playfair rule). */
+.so-welcome :is(h1, h2, h3) {
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+}
